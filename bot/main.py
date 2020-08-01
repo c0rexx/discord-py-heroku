@@ -300,6 +300,9 @@ def img_to_text(image, language: str = 'eng'):
 @bot.command(name='read', help='Read image.')
 async def upload_file(ctx, arg1: str = '', arg2: str = ''):
     lang = 'ara+ces+chi_tra+eng+rus+jpn+kor'
+    if arg1 and not arg2:
+        arg2 = arg1
+        arg1 = ''
     if arg1:
         lang = arg1
     if not arg2 and not ctx.message.attachments:
