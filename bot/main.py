@@ -326,6 +326,6 @@ async def upload_file(ctx, arg1: str = ''):
     image = Image.open(response.raw)
     text = img_to_text(image)
     await status.delete()
-    await ctx.send(text)
+    await ctx.send(text[:2000])
 
 bot.run(DISCORD_TOKEN)
