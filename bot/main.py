@@ -7,6 +7,7 @@ import discord
 import wikipedia
 from PIL import Image
 import pytesseract
+from googletrans import Translator
 from discord.ext import commands
 from bs4 import BeautifulSoup
 
@@ -327,5 +328,25 @@ async def upload_file(ctx, arg1: str = ''):
     text = img_to_text(image)
     await status.delete()
     await ctx.send(text[:2000])
+    
+translator = Translator()
+@bot.command(name='translate', help="Translate text.")
+async def translate(ctx, *args):
+    fail = False
+    if not args:
+        fail = True
+    text = ''
+    for x in args[1:]:
+        text += x
+    result = None
+    try:
+        result = translator.translate(text, dest=args[0])
+    except:
+        fail = True
+    if fail:
+        await ctx.send('Invalid language.')
+        await ctx.message.add_reaction(si_emoji)
+        return
+    print(result.text)
 
 bot.run(DISCORD_TOKEN)
