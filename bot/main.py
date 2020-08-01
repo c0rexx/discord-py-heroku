@@ -69,7 +69,7 @@ def random_date(start, end):
 def time_until_tomorrow():
     dt = datetime.datetime.utcnow()
     tomorrow = dt + datetime.timedelta(days=1)
-    return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=4)
+    return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=4, minutes=7)
 
 def format_date(date):
     return str(str(date.year)+'/'+str(date.month).zfill(2)+'/'+str(date.day).zfill(2))
@@ -172,7 +172,7 @@ async def rand_date(ctx):
         fact = await ctx.send('This comic came out in ' + custom_strftime('%B {S}, %Y', rd) + '. On this day also in the year ' + random.choice(facts))
         await fact.add_reaction(random.choice(scoots_emoji))
 
-@bot.command(name='garf', help="Get specific Garfield comic, format: 'Year Month Day'")
+@bot.command(name='garf', help="Get specific Garfield comic, format: 'Year Month Day'.")
 async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
     result = "No, I don't think so. " + smug_emoji
     if not arg1 or not arg2 or not arg3:
@@ -208,7 +208,7 @@ async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
     if result:
         await ctx.send(result)
 
-@bot.command(name='weather', help="Get location's weather")
+@bot.command(name='weather', help="Get location's weather.")
 async def weather(ctx, *args):
     city = 'Prague'
     if len(args) != 0:
