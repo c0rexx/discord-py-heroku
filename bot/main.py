@@ -296,7 +296,7 @@ def img_to_text(image):
 
 @bot.command(name='read', help='Read image.')
 async def upload_file(ctx, arg1: str = ''):
-    if (not arg1 and not ctx.message.attachments) or not ctx.message.attachments[0].url:
+    if not arg1 or not ctx.message.attachments:
         await ctx.send('No image provided.')
         await ctx.message.add_reaction(si_emoji)
         return
