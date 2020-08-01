@@ -46,8 +46,8 @@ async def status_changer():
 
 async def wait_until_release():
     x = datetime.datetime.utcnow()
-    y = x.replace(day=x.day, hour=4, minute=7)
-    if not (x.hour < 4 or (x.hour == 4 and x.minute < 7)):
+    y = x.replace(day=x.day, hour=5, minute=7)
+    if not (x.hour < 5 or (x.hour == 5 and x.minute < 7)):
         y += datetime.timedelta(days=1)
     delta_t = y - x
     await asyncio.sleep(delta_t.total_seconds())
@@ -69,7 +69,7 @@ def random_date(start, end):
 def time_until_tomorrow():
     dt = datetime.datetime.utcnow()
     tomorrow = dt + datetime.timedelta(days=1)
-    return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=4, minutes=7)
+    return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=5, minutes=7)
 
 def format_date(date):
     return str(str(date.year)+'/'+str(date.month).zfill(2)+'/'+str(date.day).zfill(2))
@@ -113,8 +113,8 @@ async def roll(ctx, input: str = '100'):
 @bot.command(name='today', help="Get today's Garfield comic.")
 async def today(ctx):
     now = datetime.datetime.utcnow()
-    if now.hour < 4 or (now.hour==4 and now.minute < 7):
-        release = datetime.datetime(now.year, now.month, now.day, 4, 7, 0, 0)
+    if now.hour < 4 or (now.hour==5 and now.minute < 7):
+        release = datetime.datetime(now.year, now.month, now.day, 5, 7, 0, 0)
         td = (release - now)
         hours = td.seconds // 3600 % 24
         minutes = td.seconds // 60 % 60
