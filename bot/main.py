@@ -10,14 +10,15 @@ import pytesseract
 from discord.ext import commands
 from bs4 import BeautifulSoup
 
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-WEATHER_TOKEN = os.getenv("WEATHER_TOKEN")
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+WEATHER_TOKEN = os.getenv('WEATHER_TOKEN')
 
 bot = commands.Bot(command_prefix='p.')
 
 si_emoji = '<:Si:523966164704034837>'
 smug_emoji = '<:forsenSmug:736973361283858442>'
 sad_emoji = '<:Sadge:696437945392955453>'
+pepega_emoji = '<:Pepega:739020602194657330>'
 scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
     '<:OMGScoots:736973384570634321>'
@@ -292,6 +293,8 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
 
 def img_to_text(image):
     text = pytesseract.image_to_string(image)
+    if not text:
+        text = 'HOW TO READ ' + pepega_emoji
     return text
 
 @bot.command(name='read', help='Read image.')
