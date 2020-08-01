@@ -295,17 +295,34 @@ def img_to_text(image):
     return text
 
 @bot.command(name='read', help='Read image.')
-async def upload_file(ctx):
-    url = ctx.message.attachments[0].url
-    if not url:
+async def upload_file(ctx, arg1: str = ''):
+    if (not arg1 and not ctx.message.attachments) or not ctx.message.attachments[0].url:
         await ctx.send('No image provided.')
         await ctx.message.add_reaction(si_emoji)
         return
+    url = ''
+    if arg1:
+        url = arg1
+    else:
+        url = ctx.message.attachments[0].url
     status = await ctx.send('Downloading...')
-    response = requests.get(url, stream=True)
+    response = None
+    fail = False
+    try:
+        response = requests.get(url, stream=True)
+        if response.status_code != requests.codes.ok:
+            fail = True
+    except:
+        fail = True
+    if fail:
+        await status.delete()
+        await ctx.send('Invalid url.')
+        await ctx.message.add_reaction(si_emoji)
+        return
     await status.edit(content='Processing...')
     image = Image.open(response.raw)
+    text = img_to_text(image)
     await status.delete()
-    await ctx.send(img_to_text(image))
+    await ctx.send(text)
 
 bot.run(DISCORD_TOKEN)
