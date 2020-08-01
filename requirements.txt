@@ -25,3 +25,4 @@ wikipedia==1.4.0
 yarl==1.4.2
 Pillow==7.2.0
 pytesseract==0.3.4
+googletrans==3.0.0
