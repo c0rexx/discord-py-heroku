@@ -302,9 +302,9 @@ async def upload_file(ctx):
         await ctx.message.add_reaction(si_emoji)
         return
     status = await ctx.send('Downloading...')
-    response = requests.get(url)
+    response = requests.get(url, stream=True)
     await status.edit(content='Processing...')
-    image = Image.open(StringIO(response.content))
+    image = Image.open(response.raw)
     await status.delete()
     await ctx.send(img_to_text)
 
