@@ -326,8 +326,16 @@ async def upload_file(ctx, arg1: str = ''):
         await ctx.message.add_reaction(si_emoji)
         return
     await status.edit(content='Processing...')
-    image = Image.open(response.raw)
-    text = img_to_text(image)
+    image = None
+    text = ''
+    try:
+        image = Image.open(response.raw)
+        text = img_to_text(image)
+    except:
+        await status.delete()
+        await ctx.send("No, I don't think so. " + smug_emoji)
+        await ctx.message.add_reaction(si_emoji)
+        return
     await status.delete()
     await ctx.send(text[:2000])
     
