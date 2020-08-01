@@ -308,4 +308,4 @@ async def upload_file(ctx):
     await status.delete()
     await ctx.send(img_to_text)
 
-bot.run(TOKEN)
+bot.run(DISCORD_TOKEN)
