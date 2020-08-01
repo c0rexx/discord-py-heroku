@@ -295,7 +295,9 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
 def img_to_text(image):
     text = pytesseract.image_to_string(image, lang='ara+ces+chi_tra+eng+rus+jpn+kor')
     if not text:
-        text = 'HOW TO READ ' + pepega_emoji
+        text = 'HOW TO READ ' + pepega_emoji + "\n(Couldn't read anything.)"
+    else:
+        text = '`' + text + '`'
     return text
 
 @bot.command(name='read', help='Read image.')
