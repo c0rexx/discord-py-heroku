@@ -44,8 +44,8 @@ async def status_changer():
 
 async def wait_until_release():
     x = datetime.datetime.now()
-    y = x.replace(day=x.day, hour=7, minute=7, second=0, microsecond=0)
-    if not (x.hour < 7 or (x.hour == 7 and x.minute < 7)):
+    y = x.replace(day=x.day, hour=6, minute=7, second=0, microsecond=0)
+    if not (x.hour < 6 or (x.hour == 6 and x.minute < 7)):
         y += datetime.timedelta(days=1)
     delta_t = y - x
     await asyncio.sleep(delta_t.total_seconds())
@@ -111,8 +111,8 @@ async def roll(ctx, input: str = '100'):
 @bot.command(name='today', help="Get today's Garfield comic.")
 async def today(ctx):
     now = datetime.datetime.now()
-    if now.hour < 7 or (now.hour==7 and now.minute < 7):
-        release = datetime.datetime(now.year, now.month, now.day, 7, 7, 0, 0)
+    if now.hour < 6 or (now.hour==6 and now.minute < 7):
+        release = datetime.datetime(now.year, now.month, now.day, 6, 7, 0, 0)
         td = (release - now)
         hours = td.seconds // 3600 % 24
         minutes = td.seconds // 60 % 60
@@ -306,6 +306,6 @@ async def upload_file(ctx):
     await status.edit(content='Processing...')
     image = Image.open(response.raw)
     await status.delete()
-    await ctx.send(img_to_text)
+    await ctx.send(img_to_text(image))
 
 bot.run(DISCORD_TOKEN)
