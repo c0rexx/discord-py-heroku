@@ -46,8 +46,8 @@ async def status_changer():
 
 async def wait_until_release():
     x = datetime.datetime.utcnow()
-    y = x.replace(day=x.day, hour=6, minute=7)
-    if not (x.hour < 6 or (x.hour == 6 and x.minute < 7)):
+    y = x.replace(day=x.day, hour=4, minute=7)
+    if not (x.hour < 4 or (x.hour == 4 and x.minute < 7)):
         y += datetime.timedelta(days=1)
     delta_t = y - x
     await asyncio.sleep(delta_t.total_seconds())
@@ -69,7 +69,7 @@ def random_date(start, end):
 def time_until_tomorrow():
     dt = datetime.datetime.utcnow()
     tomorrow = dt + datetime.timedelta(days=1)
-    return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=7)
+    return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=4)
 
 def format_date(date):
     return str(str(date.year)+'/'+str(date.month).zfill(2)+'/'+str(date.day).zfill(2))
@@ -112,9 +112,9 @@ async def roll(ctx, input: str = '100'):
 
 @bot.command(name='today', help="Get today's Garfield comic.")
 async def today(ctx):
-    now = datetime.datetime.now()
-    if now.hour < 6 or (now.hour==6 and now.minute < 7):
-        release = datetime.datetime(now.year, now.month, now.day, 6, 7, 0, 0)
+    now = datetime.datetime.utcnow()
+    if now.hour < 4 or (now.hour==4 and now.minute < 7):
+        release = datetime.datetime(now.year, now.month, now.day, 4, 7, 0, 0)
         td = (release - now)
         hours = td.seconds // 3600 % 24
         minutes = td.seconds // 60 % 60
@@ -125,7 +125,7 @@ async def today(ctx):
 
 @bot.command(name='yesterday', help="Get yesterdays's Garfield comic.")
 async def yesterday(ctx):
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     await garf_comic(ctx.channel, now - datetime.timedelta(days=1))
 
 @bot.command(name='tomorrow', help="Get tomorrow's Garfield comic? Unless??")
@@ -147,7 +147,7 @@ def custom_strftime(format, t):
 @bot.command(name='random', help='Get random Garfield comic.')
 async def rand_date(ctx):
     first = datetime.date(1978, 6, 19)
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     last = datetime.date(now.year, now.month, now.day)
     rd = random_date(first, last)
     await garf_comic(ctx.channel, rd)
