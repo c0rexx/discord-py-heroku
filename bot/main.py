@@ -291,21 +291,24 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
         fact = await ctx.send(msg + random.choice(facts))
         await fact.add_reaction(random.choice(scoots_emoji))
 
-def img_to_text(image):
-    text = pytesseract.image_to_string(image, lang='ara+ces+chi_tra+eng+rus+jpn+kor')
+def img_to_text(image, language: str = 'eng'):
+    text = pytesseract.image_to_string(image, lang=language)
     if not text:
         text = 'HOW TO READ ' + pepega_emoji
     return text
 
 @bot.command(name='read', help='Read image.')
-async def upload_file(ctx, arg1: str = ''):
-    if not arg1 and not ctx.message.attachments:
+async def upload_file(ctx, arg1: str = '', arg2: str = ''):
+    lang = 'ara+ces+chi_tra+eng+rus+jpn+kor'
+    if arg1:
+        lang = arg1
+    if not arg2 and not ctx.message.attachments:
         await ctx.send('No image provided.')
         await ctx.message.add_reaction(si_emoji)
         return
     url = ''
-    if arg1:
-        url = arg1
+    if arg2:
+        url = arg2
     else:
         url = ctx.message.attachments[0].url
     status = await ctx.send('Downloading...')
