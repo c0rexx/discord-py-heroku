@@ -40,7 +40,7 @@ activites = [
 async def status_changer():
     while True:
         await bot.change_presence(activity=random.choice(activites))
-        await asyncio.sleep(10)
+        await asyncio.sleep(30)
 
 async def wait_until_release():
     x = datetime.datetime.now()
