@@ -338,6 +338,8 @@ async def translate(ctx, *args):
     text = ''
     for x in args[1:]:
         text += x
+    if not text:
+        fail = True
     result = None
     try:
         result = translator.translate(text, dest=args[0])
@@ -347,6 +349,6 @@ async def translate(ctx, *args):
         await ctx.send('Invalid language.')
         await ctx.message.add_reaction(si_emoji)
         return
-    print(result.text)
+    await ctx.send(result.text[:2000])
 
 bot.run(DISCORD_TOKEN)
