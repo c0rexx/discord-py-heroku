@@ -45,14 +45,14 @@ async def status_changer():
         await asyncio.sleep(30)
 
 async def wait_until_release():
-    x = datetime.datetime.utcnow().date()
-    y = x.replace(day=x.day, hour=6, minute=7, second=0, microsecond=0)
+    x = datetime.datetime.utcnow()
+    y = x.replace(day=x.day, hour=6, minute=7)
     if not (x.hour < 6 or (x.hour == 6 and x.minute < 7)):
         y += datetime.timedelta(days=1)
     delta_t = y - x
     await asyncio.sleep(delta_t.total_seconds())
     while True:
-        await garf_comic(bot.guilds[0].text_channels[0], datetime.datetime.utcnow().date())
+        await garf_comic(bot.guilds[0].text_channels[0], datetime.datetime.utcnow())
         await asyncio.sleep(86400)
 
 @bot.event
@@ -67,7 +67,7 @@ def random_date(start, end):
     return start + datetime.timedelta(seconds=random_second)
 
 def time_until_tomorrow():
-    dt = datetime.datetime.utcnow().date()
+    dt = datetime.datetime.utcnow()
     tomorrow = dt + datetime.timedelta(days=1)
     return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=7)
 
