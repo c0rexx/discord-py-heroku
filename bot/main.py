@@ -131,7 +131,7 @@ async def yesterday(ctx):
 @bot.command(name='tomorrow', help="Get tomorrow's Garfield comic? Unless??")
 async def tomorrow(ctx):
     td = time_until_tomorrow()
-    hours = td.seconds // 3600 % 24
+    hours = td.seconds // 3600
     minutes = td.seconds // 60 % 60
     seconds = td.seconds - hours*3600 - minutes*60
     response = "You will have to be patient, tomorrow's comic comes out in " + str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2) + '.'
