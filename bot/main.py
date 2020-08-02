@@ -346,13 +346,14 @@ async def upload_file(ctx, arg1: str = ''):
     
 translator = Translator()
 @bot.command(name='translate', help="Translate text.")
-async def translate(ctx, arg1, *, arg):
+async def translate(ctx, *, arg):
     fail = False
-    if not arg1 or not arg:
+    if not arg:
         fail = True
     result = None
+    input = arg.split(' ', 1)
     try:
-        result = translator.translate(text, dest=arg1)
+        result = translator.translate(input[1], dest=input[0])
     except:
         fail = True
     if fail:
