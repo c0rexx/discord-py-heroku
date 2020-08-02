@@ -347,16 +347,15 @@ async def upload_file(ctx, arg1: str = ''):
 translator = Translator()
 @bot.command(name='translate', help="Translate text.")
 async def translate(ctx, *, arg):
-    fail = False
-    if not arg:
-        fail = True
     result = None
     input = arg.split(' ', 1)
+    if not input[1]:
+        await ctx.send("No, I don't think so. " + smug_emoji)
+        await ctx.message.add_reaction(si_emoji)
+        return
     try:
         result = translator.translate(input[1], dest=input[0])
     except:
-        fail = True
-    if fail:
         await ctx.send('Invalid language.')
         await ctx.message.add_reaction(si_emoji)
         return
