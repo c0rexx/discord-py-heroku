@@ -293,7 +293,7 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
         await fact.add_reaction(random.choice(scoots_emoji))
 
 def img_to_text(image):
-    text = pytesseract.image_to_string(image, lang='ara+ces+chi_tra+eng+rus+jpn+kor')
+    text = pytesseract.image_to_string(image, lang='ara+ces+chi_tra+eng+rus+jpn+kor', config='--psm 11')
     if not text:
         text = 'HOW TO READ ' + pepega_emoji + "\n(Couldn't read anything.)"
     else:
