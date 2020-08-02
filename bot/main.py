@@ -346,7 +346,7 @@ async def upload_file(ctx, arg1: str = ''):
     
 translator = Translator()
 @bot.command(name='translate', help="Translate text.")
-async def translate(ctx, arg):
+async def translate(ctx, *, arg):
     result = None
     if not arg:
         await ctx.send("No, I don't think so. " + smug_emoji)
