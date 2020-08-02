@@ -302,6 +302,7 @@ def img_to_text(image):
         for line in lines:
             if line:
                 text += line + '\n'
+        text = text[:1997]
         text += '```'
     return text
 
@@ -341,28 +342,23 @@ async def upload_file(ctx, arg1: str = ''):
         await ctx.message.add_reaction(si_emoji)
         return
     await status.delete()
-    await ctx.send(text[:2000])
+    await ctx.send(text)
     
 translator = Translator()
 @bot.command(name='translate', help="Translate text.")
-async def translate(ctx, *args):
+async def translate(ctx, arg1, *, arg):
     fail = False
-    if not args:
-        fail = True
-    text = ''
-    for x in args[1:]:
-        text += x
-    if not text:
+    if not arg1 or not arg:
         fail = True
     result = None
     try:
-        result = translator.translate(text, dest=args[0])
+        result = translator.translate(text, dest=arg1)
     except:
         fail = True
     if fail:
         await ctx.send('Invalid language.')
         await ctx.message.add_reaction(si_emoji)
         return
-    await ctx.send(result.text[:2000])
+    await ctx.send('```' + result.text[:1994] + '```')
 
 bot.run(DISCORD_TOKEN)
