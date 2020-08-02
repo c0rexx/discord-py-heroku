@@ -297,7 +297,12 @@ def img_to_text(image):
     if not text:
         text = 'HOW TO READ ' + pepega_emoji + "\n(Couldn't read anything.)"
     else:
-        text = '```' + text + '```'
+        lines = text.splitlines()
+        text = '```'
+        for line in lines:
+            if line:
+                text += line + '\n'
+        text += '```'
     return text
 
 @bot.command(name='read', help='Read image.')
