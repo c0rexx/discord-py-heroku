@@ -293,7 +293,7 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
         await fact.add_reaction(random.choice(scoots_emoji))
 
 def img_to_text(image):
-    text = pytesseract.image_to_string(image, lang='ara+ces+chi_tra+eng+rus+jpn+kor', config='--psm 11 --oem 2')
+    text = pytesseract.image_to_string(image, lang='ara+ces+chi_tra+eng+rus+jpn+kor', config='--psm 11')
     if not text:
         text = 'HOW TO READ ' + pepega_emoji + "\n(Couldn't read anything.)"
     else:
@@ -326,7 +326,6 @@ async def upload_file(ctx, arg1: str = ''):
         await ctx.message.add_reaction(si_emoji)
         return
     await status.edit(content='Processing...')
-    image = None
     text = ''
     try:
         image = Image.open(response.raw)
