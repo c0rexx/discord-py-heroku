@@ -1,18 +1,23 @@
 import os
+import io
+import json
 import random
-import datetime
-import requests
 import asyncio
 import discord
+import datetime
+import requests
 import wikipedia
-from PIL import Image
 import pytesseract
-from googletrans import Translator
-from discord.ext import commands
+from PIL import Image
 from bs4 import BeautifulSoup
+from discord.ext import commands
+from googletrans import Translator
+from google.oauth2 import service_account
+from google.cloud import vision
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 WEATHER_TOKEN = os.getenv('WEATHER_TOKEN')
+GOOGLE_CLOUD_CREDENTIALS = service_account.Credentials.from_service_account_info(json.loads(os.getenv('GOOGLE_CLIENT_SECRETS')))
 
 bot = commands.Bot(command_prefix='p.')
 
@@ -306,8 +311,23 @@ def img_to_text(image):
         text += '```'
     return text
 
+client = vision.ImageAnnotatorClient(credentials=GOOGLE_CLOUD_CREDENTIALS)
+
+def detect_text(url):
+    response = requests.get(url)
+    image_bytes = io.BytesIO(response.content)
+
+    image = vision.types.Image(content=image_bytes.read())
+
+    response_cloud = client.text_detection(image=image)
+    texts = response_cloud.text_annotations
+    if not texts:
+        print('No text detected')
+    else:
+        print(texts[0].description)
+
 @bot.command(name='read', help='Read image.')
-async def upload_file(ctx, arg1: str = ''):
+async def read(ctx, arg1: str = ''):
     if not arg1 and not ctx.message.attachments:
         await ctx.send('No image provided.')
         await ctx.message.add_reaction(si_emoji)
@@ -317,25 +337,10 @@ async def upload_file(ctx, arg1: str = ''):
         url = arg1
     else:
         url = ctx.message.attachments[0].url
-    status = await ctx.send('Downloading...')
-    response = None
-    fail = False
-    try:
-        response = requests.get(url, stream=True)
-        if response.status_code != requests.codes.ok:
-            fail = True
-    except:
-        fail = True
-    if fail:
-        await status.delete()
-        await ctx.send('Invalid url.')
-        await ctx.message.add_reaction(si_emoji)
-        return
-    await status.edit(content='Processing...')
+    status = await ctx.send('Processing...')
     text = ''
     try:
-        image = Image.open(response.raw)
-        text = img_to_text(image)
+        text = detect_text(url)
     except:
         await status.delete()
         await ctx.send("No, I don't think so. " + smug_emoji)
