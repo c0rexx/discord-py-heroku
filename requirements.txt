@@ -34,4 +34,4 @@ google-auth-httplib2==0.0.4
 google-cloud==0.34.0
 google-cloud-vision==1.0.0
 googleapis-common-protos==1.52.0
-setuptools=49.2.1
+setuptools==49.2.1
