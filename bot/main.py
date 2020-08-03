@@ -7,8 +7,6 @@ import discord
 import datetime
 import requests
 import wikipedia
-import pytesseract
-from PIL import Image
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from googletrans import Translator
@@ -300,21 +298,7 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
         fact = await ctx.send(msg + random.choice(facts))
         await fact.add_reaction(random.choice(scoots_emoji))
 
-def img_to_text(image):
-    text = pytesseract.image_to_string(image, lang='ara+ces+chi_tra+eng+rus+jpn+kor', config='--psm 11')
-    if not text:
-        text = 'HOW TO READ ' + pepega_emoji + "\n(Couldn't read anything.)"
-    else:
-        lines = text.splitlines()
-        text = '```'
-        for line in lines:
-            if line:
-                text += line + '\n'
-        text = text[:1997]
-        text += '```'
-    return text
-
-client = vision.ImageAnnotatorClient(credentials=GOOGLE_CLOUD_CREDENTIALS)
+google_vision = vision.ImageAnnotatorClient(credentials=GOOGLE_CLOUD_CREDENTIALS)
 
 def detect_text(url):
     response = requests.get(url)
@@ -324,8 +308,8 @@ def detect_text(url):
         image = vision.types.Image(content=image_bytes.read())
     except:
         return "Couldn't download image."
-    response_cloud = client.text_detection(image=image)
-    texts = response_cloud.text_annotations
+    cloud_response = google_vision.text_detection(image=image)
+    texts = cloud_response.text_annotations
     if not texts:
         return 'No text detected.'
     else:
@@ -370,9 +354,12 @@ async def translate(ctx, *, arg):
     try:
         result = translator.translate(input[1], dest=input[0])
     except:
-        await ctx.send('Invalid language.')
-        await ctx.message.add_reaction(si_emoji)
-        return
+        try:
+            result = translator.translate(arg, dest='en')
+        except:
+            await ctx.send("Couldn't translate.")
+            await ctx.message.add_reaction(si_emoji)
+            return
     await ctx.send('```' + result.text[:1994] + '```')
 
 bot.run(DISCORD_TOKEN)
