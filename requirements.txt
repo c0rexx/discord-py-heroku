@@ -26,5 +26,11 @@ yarl==1.4.2
 Pillow==7.2.0
 pytesseract==0.3.4
 googletrans==3.0.0
+google==3.0.0
+google-api-core==1.22.0
+google-api-python-client==1.10.0
 google-auth==1.20.0
+google-auth-httplib2==0.0.4
 google-cloud==0.34.0
+google-cloud-vision==1.0.0
+googleapis-common-protos==1.52.0
