@@ -7,9 +7,9 @@ import discord
 import datetime
 import requests
 import wikipedia
+import googletrans
 from bs4 import BeautifulSoup
 from discord.ext import commands
-from googletrans import Translator
 from google.oauth2 import service_account
 from google.cloud import vision
 
@@ -338,25 +338,30 @@ async def read(ctx, arg1: str = ''):
     await status.delete()
     await ctx.send(text)
     
-translator = Translator()
+translator = googletrans.Translator()
+
 @bot.command(name='translate', help="Translate text.")
 async def translate(ctx, *, arg):
     result = None
+    
+    # No text entered -> nothing to translate
     if not arg:
         await ctx.send("No, I don't think so. " + smug_emoji)
         await ctx.message.add_reaction(si_emoji)
         return
+    
+    # Get first word
     input = arg.split(' ', 1)
-    try:
+    # If it's an ISO639-1 language code, translate to that language
+    if input[0] in googletrans.LANGUAGES:
         result = translator.translate(input[1], dest=input[0])
-    except:
-        try:
-            result = translator.translate(arg, dest='en')
-        except:
-            await ctx.send("Couldn't translate.")
-            await ctx.message.add_reaction(si_emoji)
-            return
-    msg = 'Translated from `' + result.src + '` to  `' + result.dest + '`.'
+    # Otherwise translate to english by default
+    else:
+        result = translator.translate(arg, dest='en')
+        
+    # Send the translated text and info about origin and destination languages
+    msg = 'Translated from `' + googletrans.LANGUAGES.get(result.src) + '` to  `' + googletrans.LANGUAGES.get(result.dest) + '`.'
     await ctx.send(msg + '\n```' + result.text[:1900] + '```')
 
+    
 bot.run(DISCORD_TOKEN)
