@@ -347,10 +347,6 @@ async def translate(ctx, *, arg):
         await ctx.message.add_reaction(si_emoji)
         return
     input = arg.split(' ', 1)
-    if len(input) != 2 or not input[1]:
-        await ctx.send("No, I don't think so. " + smug_emoji)
-        await ctx.message.add_reaction(si_emoji)
-        return
     try:
         result = translator.translate(input[1], dest=input[0])
     except:
