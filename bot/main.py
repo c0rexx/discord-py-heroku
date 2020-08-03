@@ -356,6 +356,7 @@ async def translate(ctx, *, arg):
             await ctx.send("Couldn't translate.")
             await ctx.message.add_reaction(si_emoji)
             return
-    await ctx.send('```' + result.text[:1994] + '```')
+    msg = 'Translated from `' + result.src + '` to  `' + result.dest + '`.'
+    await ctx.send(msg + '\n```' + result.text[:1900] + '```')
 
 bot.run(DISCORD_TOKEN)
