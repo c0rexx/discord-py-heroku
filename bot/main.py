@@ -118,7 +118,7 @@ async def roll(ctx, input: str = '100'):
 @bot.command(name='today', help="Get today's Garfield comic.")
 async def today(ctx):
     now = datetime.datetime.utcnow()
-    if now.hour < 4 or (now.hour==5 and now.minute < 7):
+    if now.hour < 5 or (now.hour==5 and now.minute < 7):
         release = datetime.datetime(now.year, now.month, now.day, 5, 7, 0, 0)
         td = (release - now)
         hours = td.seconds // 3600 % 24
@@ -137,6 +137,9 @@ async def yesterday(ctx):
 async def tomorrow(ctx):
     td = time_until_tomorrow()
     hours = td.seconds // 3600
+    now = datetime.datetime.utcnow()
+    if now.hour < 5 or (now.hour==5 and now.minute < 7):
+        hours += 24
     minutes = td.seconds // 60 % 60
     seconds = td.seconds - hours*3600 - minutes*60
     response = "You will have to be patient, tomorrow's comic comes out in " + str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2) + '.'
