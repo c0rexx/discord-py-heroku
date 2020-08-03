@@ -315,16 +315,18 @@ client = vision.ImageAnnotatorClient(credentials=GOOGLE_CLOUD_CREDENTIALS)
 
 def detect_text(url):
     response = requests.get(url)
-    image_bytes = io.BytesIO(response.content)
-
-    image = vision.types.Image(content=image_bytes.read())
-
+    image = None
+    try:
+        image_bytes = io.BytesIO(response.content)
+        image = vision.types.Image(content=image_bytes.read())
+    except:
+        return "Couldn't download image."
     response_cloud = client.text_detection(image=image)
     texts = response_cloud.text_annotations
     if not texts:
-        print('No text detected')
+        return 'No text detected.'
     else:
-        print(texts[0].description)
+        return texts[0].description
 
 @bot.command(name='read', help='Read image.')
 async def read(ctx, arg1: str = ''):
@@ -340,7 +342,7 @@ async def read(ctx, arg1: str = ''):
     status = await ctx.send('Processing...')
     text = ''
     try:
-        text = detect_text(url)
+        text = '```' + detect_text(url)[:1994] + '```'
     except:
         await status.delete()
         await ctx.send("No, I don't think so. " + smug_emoji)
