@@ -135,12 +135,12 @@ async def yesterday(ctx):
 @bot.command(name='tomorrow', help="Get tomorrow's Garfield comic? Unless??")
 async def tomorrow(ctx):
     td = time_until_tomorrow()
-    hours = td.seconds // 3600
+    hours = td.seconds // 3600 % 24
     now = datetime.datetime.utcnow()
-    if now.hour < 5 or (now.hour==5 and now.minute < 7):
-        hours += 24
     minutes = td.seconds // 60 % 60
     seconds = td.seconds - hours*3600 - minutes*60
+    if now.hour < 5 or (now.hour==5 and now.minute < 7):
+        hours += 24
     response = "You will have to be patient, tomorrow's comic comes out in " + str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2) + '.'
     await ctx.message.add_reaction(si_emoji)
     await ctx.send(response)
