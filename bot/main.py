@@ -419,9 +419,11 @@ async def play(ctx, *, url):
     await ctx.send('❗ `Experimental feature` ❗')
     channel = ctx.author.voice.channel
     await channel.connect()
-    async with ctx.typing():
-        player = await YTDLSource.from_url(url, loop=bot.loop)
-        channel.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+    player = await YTDLSource.from_url(url, loop=bot.loop)
+    voice = get(bot.voice_clients, guild=ctx.guild)
+    voice.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+    voice.volume = 100
+    voice.is_playing()
     await ctx.send('Now playing: {}'.format(player.title))
 
     
