@@ -416,8 +416,19 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
-if not discord.opus.is_loaded():
-    discord.opus.load_opus('opus')
+raise OpusNotLoaded()
+discord.opus.OpusNotLoaded
+import ctypes
+import ctypes.util
+print("ctypes - Find opus:")
+a = ctypes.util.find_library('opus')
+print(a)
+print("Discord - Load Opus:")
+b = discord.opus.load_opus(a)
+print(b)
+print("Discord - Is loaded:")
+c = discord.opus.is_loaded()
+print(c)
     
 @bot.command(pass_context=True)
 async def play(ctx, *, url):
