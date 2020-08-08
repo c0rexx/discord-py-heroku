@@ -64,6 +64,14 @@ async def on_ready():
     bot.loop.create_task(status_changer())
     bot.loop.create_task(wait_until_release())
 
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.message.add_reaction(si_emoji)
+        await ctx.send(pepega_emoji + '📣' + ' COMMAND NOT FOUND')
+        return
+    raise error
+    
 def random_date(start, end):
     delta = end - start
     int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
