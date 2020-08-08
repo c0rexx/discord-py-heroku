@@ -416,6 +416,9 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
+if not discord.opus.is_loaded():
+    discord.opus.load_opus('opus')
+    
 @bot.command(pass_context=True)
 async def play(ctx, *, url):
     player = await YTDLSource.from_url(url, loop=bot.loop)
