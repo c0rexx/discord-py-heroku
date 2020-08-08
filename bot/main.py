@@ -417,14 +417,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 @bot.command(pass_context=True)
-    async def play(ctx, *, url):
-        print(url)
-        server = ctx.message.guild
-        voice_channel = server.voice_client
+async def play(ctx, *, url):
+    print(url)
+    server = ctx.message.guild
+    voice_channel = server.voice_client
 
-        async with ctx.typing():
-            player = await YTDLSource.from_url(url, loop=bot.loop)
-            ctx.voice_channel.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-        await ctx.send('Now playing: {}'.format(player.title))
+    async with ctx.typing():
+        player = await YTDLSource.from_url(url, loop=bot.loop)
+        ctx.voice_channel.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+    await ctx.send('Now playing: {}'.format(player.title))
     
 bot.run(DISCORD_TOKEN)
