@@ -29,6 +29,10 @@ scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
     '<:OMGScoots:736973384570634321>'
 ]
+dance_emoji = [
+    '<a:forsenPls:741611256460476496>',
+    '<a:forsenDiscoSnake:741613895562690590>'
+]
 
 headers = {
     'Access-Control-Allow-Origin': '*',
@@ -433,12 +437,12 @@ async def play(ctx, *, url):
     player = await YTDLSource.from_url(url, loop=bot.loop)
     channel = ctx.author.voice.channel
     vc = await channel.connect()
+    title = await ctx.send('Now playing: ' + player.title )
+    await title.add_reaction(random.choice(dance_emoji))
     vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
     #vc.is_playing()
     #vc.pause()
     #vc.resume()
     #vc.stop()
-        
-    await ctx.send('Now playing: {}'.format(player.title))
     
 bot.run(DISCORD_TOKEN)
