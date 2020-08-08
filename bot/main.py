@@ -373,84 +373,58 @@ async def translate(ctx, *, arg):
     msg = 'Translated from `' + googletrans.LANGUAGES.get(result.src) + '` ' + emoji_locale.code_to_country(result.src) + ' to `' + googletrans.LANGUAGES.get(result.dest) + '` ' + emoji_locale.code_to_country(result.dest) + '.'
     await ctx.send(msg + '\n```' + result.text[:1900] + '```')
 
-@bot.command(pass_context=True, aliases=['j', 'joi'])
-async def join(ctx):
-    channel = ctx.message.author.voice.channel
-    voice = get(bot.voice_clients, guild=ctx.guild)
+# https://stackoverflow.com/questions/56060614/how-to-make-a-discord-bot-play-youtube-audio
+youtube_dl.utils.bug_reports_message = lambda: ''
+ytdl_format_options = {
+    'format': 'bestaudio/best',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
+}
 
-    if voice and voice.is_connected():
-        await voice.move_to(channel)
-    else:
-        voice = await channel.connect()
+ffmpeg_options = {
+    'options': '-vn'
+}
 
-    await voice.disconnect()
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
-    if voice and voice.is_connected():
-        await voice.move_to(channel)
-    else:
-        voice = await channel.connect()
-        print(f"The bot has connected to {channel}\n")
+class YTDLSource(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
 
-    await ctx.send(f"Joined {channel}")
+        self.data = data
 
+        self.title = data.get('title')
+        self.url = data.get('url')
 
-@bot.command(pass_context=True, aliases=['l', 'lea'])
-async def leave(ctx):
-    channel = ctx.message.author.voice.channel
-    voice = get(bot.voice_clients, guild=ctx.guild)
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=False):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
 
-    if voice and voice.is_connected():
-        await voice.disconnect()
-        print(f"The bot has left {channel}")
-        await ctx.send(f"Left {channel}")
-    else:
-        print("Bot was told to leave voice channel, but was not in one")
-        await ctx.send("Don't think I am in a voice channel")
+        if 'entries' in data:
+            # take first item from a playlist
+            data = data['entries'][0]
 
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
-@bot.command(pass_context=True, aliases=['p', 'pla'])
-async def play(ctx, url: str):
+@bot.command(pass_context=True)
+    async def play(ctx, *, url):
+        print(url)
+        server = ctx.message.guild
+        voice_channel = server.voice_client
 
-    song_there = os.path.isfile("song.mp3")
-    try:
-        if song_there:
-            os.remove("song.mp3")
-            print("Removed old song file")
-    except PermissionError:
-        print("Trying to delete song file, but it's being played")
-        await ctx.send("ERROR: Music playing")
-        return
-
-    await ctx.send("Getting everything ready now")
-
-    voice = get(bot.voice_clients, guild=ctx.guild)
-
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-    }
-
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        print("Downloading audio now\n")
-        ydl.download([url])
-
-    for file in os.listdir("./"):
-        if file.endswith(".mp3"):
-            name = file
-            print(f"Renamed File: {file}\n")
-            os.rename(file, "song.mp3")
-
-    voice.play(discord.FFmpegPCMAudio("song.mp3"), after=lambda e: print("Song done!"))
-    voice.source = discord.PCMVolumeTransformer(voice.source)
-    voice.source.volume = 0.5
-
-    nname = name.rsplit("-", 2)
-    await ctx.send(f"Playing: {nname[0]}")
-    print("playing\n")
-
+        async with ctx.typing():
+            player = await YTDLSource.from_url(url, loop=bot.loop)
+            ctx.voice_channel.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+        await ctx.send('Now playing: {}'.format(player.title))
     
 bot.run(DISCORD_TOKEN)
