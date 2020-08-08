@@ -416,12 +416,12 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 @bot.command(name='play', help="Join a voice channel and play youtube video.")
 async def play(ctx, *, url):
-    ctx.send('❗ `Experimental feature` ❗')
-    server = ctx.message.guild
-    voice_channel = server.voice_client
+    await ctx.send('❗ `Experimental feature` ❗')
+    channel = ctx.author.voice.channel
+    await channel.connect()
     async with ctx.typing():
         player = await YTDLSource.from_url(url, loop=bot.loop)
-        ctx.voice_channel.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+        channel.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
     await ctx.send('Now playing: {}'.format(player.title))
 
     
