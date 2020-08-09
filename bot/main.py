@@ -25,6 +25,7 @@ si_emoji = '<:Si:523966164704034837>'
 smug_emoji = '<:forsenSmug:736973361283858442>'
 sad_emoji = '<:Sadge:696437945392955453>'
 pepega_emoji = '<:Pepega:739020602194657330>'
+forsenScoots_emoji = '<:forsenScoots:736973346142552195>'
 scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
     '<:OMGScoots:736973384570634321>'
@@ -450,7 +451,7 @@ async def play(ctx, url: str = ''):
     global song_queue
     song_queue.append(url)
     if vc.is_playing():
-        await ctx.send("Song queued.")
+        await ctx.send("Song added to queue.")
         return
     
     while song_queue:
@@ -469,14 +470,18 @@ async def play(ctx, url: str = ''):
 @bot.command(name='queue', help="Display songs in queue.")
 async def queue(ctx):
     global song_queue
+    if not song_queue:
+        await ctx.send('Queue is empty.')
     msg = ''
     for song in song_queue:
-        msg += '`' + song + '`\n'
+        msg += song + '\n'
     await ctx.send('🎶 Queue 🎶: ' + msg[:1980])
         
 @bot.command(name='clear', help="Clear song queue.")
 async def clear(ctx):
     global song_queue
+    if not song_queue:
+        await ctx.send('Queue already empty ' + forsenScoots_emoji)
     song_queue = []
     await ctx.send('Queue emptied.')
     
