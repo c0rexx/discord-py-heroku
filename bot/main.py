@@ -436,12 +436,12 @@ async def play(ctx, *, url):
         await msg.add_reaction(si_emoji)
         return
         
-    if not vc or not vc.is_connected()
+    if not vc or not vc.is_connected():
         vc = await channel.connect()    
     await vc.move_to(channel)
     
     queue += url
-    if vc.is_playing()
+    if vc.is_playing():
         await ctx.send("Song queued.")
         return
     
