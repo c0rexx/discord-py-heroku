@@ -427,10 +427,10 @@ discord.opus.load_opus(ctypes.util.find_library('opus'))
 vc = None
 song_queue = []
 
-@bot.command(pass_context=True)
+@bot.command(name='play', help="Join VC and play music.")
 async def play(ctx, url: str = ''):
     if not url or not 'youtube.com/watch?v=' in url:
-        msg = await ctx.send("No valid url provided.")
+        msg = await ctx.send("No valid youtube url provided.")
         await msg.add_reaction(si_emoji)
         return
     
@@ -482,6 +482,7 @@ async def clear(ctx):
     global song_queue
     if not song_queue:
         await ctx.send('Queue already empty ' + forsenScoots_emoji)
+        return
     song_queue = []
     await ctx.send('Queue emptied.')
     
