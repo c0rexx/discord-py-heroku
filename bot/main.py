@@ -443,7 +443,7 @@ async def play(ctx, *, url):
         await vc.move_to(channel)
         
     global song_queue
-    song_queue += url
+    song_queue.append(url)
     if vc.is_playing():
         await ctx.send("Song queued.")
         return
@@ -465,7 +465,7 @@ async def play(ctx, *, url):
 async def queue(ctx):
     global song_queue
     for song in song_queue:
-        ctx.send('`' + song + '`')
+        await ctx.send('`' + song + '`')
         
 @bot.command(pass_context=True)
 async def clear(ctx):
