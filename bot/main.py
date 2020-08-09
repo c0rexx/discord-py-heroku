@@ -424,7 +424,7 @@ import ctypes
 import ctypes.util
 discord.opus.load_opus(ctypes.util.find_library('opus'))    
 vc = None
-queue = []
+song_queue = []
 
 @bot.command(pass_context=True)
 async def play(ctx, *, url):
@@ -442,14 +442,14 @@ async def play(ctx, *, url):
     else:
         await vc.move_to(channel)
         
-    global queue
-    queue += url
+    global song_queue
+    song_queue += url
     if vc.is_playing():
         await ctx.send("Song queued.")
         return
     
-    while queue:
-        song = queue.pop(0)
+    while song_queue:
+        song = song_queue.pop(0)
         player = await YTDLSource.from_url(song, loop=bot.loop)
         title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing: 🎶 `' + player.title + '` ' + random.choice(dance_emoji))
         await title.add_reaction(random.choice(dance_emoji))
@@ -463,13 +463,13 @@ async def play(ctx, *, url):
     
 @bot.command(pass_context=True)
 async def queue(ctx):
-    global queue
-    for song in queue:
+    global song_queue
+    for song in song_queue:
         ctx.send('`' + song + '`')
         
 @bot.command(pass_context=True)
 async def clear(ctx):
-    global queue
-    queue = []
+    global song_queue
+    song_queue = []
     
 bot.run(DISCORD_TOKEN)
