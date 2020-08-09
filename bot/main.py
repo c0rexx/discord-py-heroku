@@ -422,21 +422,39 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 import ctypes
 import ctypes.util
-discord.opus.load_opus(ctypes.util.find_library('opus'))
-    
+discord.opus.load_opus(ctypes.util.find_library('opus'))    
+vc = None
+queue = []
+
 @bot.command(pass_context=True)
 async def play(ctx, *, url):
-    player = await YTDLSource.from_url(url, loop=bot.loop)
-    channel = ctx.author.voice.channel
-    vc = await channel.connect()
+    channel = None
+    try:
+        channel = ctx.author.voice.channel
+    except:
+        msg = await ctx.send("You're not connected to a voice channel.")
+        await msg.add_reaction(si_emoji)
+        return
+        
+    if not vc or not vc.is_connected()
+        vc = await channel.connect()    
+    await vc.move_to(channel)
     
-    title = await ctx.send('Now playing: ' + player.title)
-    await title.add_reaction(random.choice(dance_emoji))
+    queue += url
+    if vc.is_playing()
+        await ctx.send("Song queued.")
+        return
     
-    vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-    
-    while vc.is_playing():
-        await asyncio.sleep(15)
+    while queue:
+        song = queue.pop(0)
+        player = await YTDLSource.from_url(song, loop=bot.loop)
+        title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing: 🎶 `' + player.title + '` ' + random.choice(dance_emoji))
+        await title.add_reaction(random.choice(dance_emoji))
+
+        vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+
+        while vc.is_playing():
+            await asyncio.sleep(1)
     await vc.disconnect()
     
 bot.run(DISCORD_TOKEN)
