@@ -461,4 +461,15 @@ async def play(ctx, *, url):
     await vc.disconnect()
     vc = None
     
+@bot.command(pass_context=True)
+async def queue(ctx):
+    global queue
+    for song in queue:
+        ctx.send('`' + song + '`')
+        
+@bot.command(pass_context=True)
+async def clear(ctx):
+    global queue
+    queue = []
+    
 bot.run(DISCORD_TOKEN)
