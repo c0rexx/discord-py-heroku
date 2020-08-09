@@ -436,13 +436,13 @@ async def play(ctx, *, url):
         await msg.add_reaction(si_emoji)
         return
         
-    if vc is None:
-        vc = await channel.connect()
+    if global vc is None:
+        global vc = await channel.connect()
     else:
-        await vc.move_to(channel)
+        await global vc.move_to(channel)
     
     queue += url
-    if vc.is_playing():
+    if global vc.is_playing():
         await ctx.send("Song queued.")
         return
     
@@ -452,11 +452,11 @@ async def play(ctx, *, url):
         title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing: 🎶 `' + player.title + '` ' + random.choice(dance_emoji))
         await title.add_reaction(random.choice(dance_emoji))
 
-        vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+        global vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
 
-        while vc.is_playing():
+        while global vc.is_playing():
             await asyncio.sleep(1)
-    await vc.disconnect()
-    vc = None
+    await global vc.disconnect()
+    global vc = None
     
 bot.run(DISCORD_TOKEN)
