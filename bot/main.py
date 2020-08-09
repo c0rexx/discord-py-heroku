@@ -441,7 +441,8 @@ async def play(ctx, *, url):
         vc = await channel.connect()
     else:
         await vc.move_to(channel)
-    
+        
+    global queue
     queue += url
     if vc.is_playing():
         await ctx.send("Song queued.")
