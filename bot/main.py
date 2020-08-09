@@ -472,6 +472,7 @@ async def queue(ctx):
     global song_queue
     if not song_queue:
         await ctx.send('Queue is empty.')
+        return
     msg = ''
     for song in song_queue:
         msg += song + '\n'
