@@ -32,7 +32,19 @@ scoots_emoji = [
 ]
 dance_emoji = [
     '<a:forsenPls:741611256460476496>',
-    '<a:forsenDiscoSnake:741613895562690590>'
+    '<a:forsenDiscoSnake:742013168234135664>',
+    '<a:headBang:742013167890333802>',
+    '<a:KKool:742013168196517899>' + ' ' + '<a:GuitarTime:742013167554789390>',
+    '<a:pepeJAM:742013167671967805>',
+    '<a:AlienPls:742014131305054239>'
+]
+dance_react = [
+    '<a:forsenPls:741611256460476496>',
+    '<a:forsenDiscoSnake:742013168234135664>',
+    '<a:headBang:742013167890333802>',
+    '<a:KKool:742013168196517899>',
+    '<a:pepeJAM:742013167671967805>',
+    '<a:AlienPls:742014131305054239>'
 ]
 
 headers = {
@@ -458,7 +470,7 @@ async def play(ctx, url: str = ''):
         song = song_queue.pop(0)
         player = await YTDLSource.from_url(song, loop=bot.loop)
         title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing: 🎶 `' + player.title + '` ' + random.choice(dance_emoji))
-        await title.add_reaction(random.choice(dance_emoji))
+        await title.add_reaction(random.choice(dance_react))
 
         vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
 
