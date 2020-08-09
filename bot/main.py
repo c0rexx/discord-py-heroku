@@ -427,7 +427,12 @@ vc = None
 song_queue = []
 
 @bot.command(pass_context=True)
-async def play(ctx, *, url):
+async def play(ctx, url: str = ''):
+    if not url or not 'youtube.com/watch?v=' in url:
+        msg = await ctx.send("No valid url provided.")
+        await msg.add_reaction(si_emoji)
+        return
+    
     channel = None
     try:
         channel = ctx.author.voice.channel
@@ -461,15 +466,27 @@ async def play(ctx, *, url):
     await vc.disconnect()
     vc = None
     
-@bot.command(pass_context=True)
+@bot.command(name='queue', help="Display songs in queue.")
 async def queue(ctx):
     global song_queue
+    msg = ''
     for song in song_queue:
-        await ctx.send('`' + song + '`')
+        msg += '`' + song + '`\n'
+    await ctx.send('🎶 Queue 🎶: ' + msg[:1980])
         
-@bot.command(pass_context=True)
+@bot.command(name='clear', help="Clear song queue.")
 async def clear(ctx):
     global song_queue
     song_queue = []
+    await ctx.send('Queue emptied.')
+    
+@bot.command(name='skip', help="Skip current song.")
+async def skip(ctx):
+    global vc
+    try:
+        vc.stop()
+    except:
+        msg = await ctx.send("Nothing is playing.")
+        await msg.add_reaction(si_emoji)
     
 bot.run(DISCORD_TOKEN)
