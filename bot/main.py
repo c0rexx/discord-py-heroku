@@ -429,12 +429,14 @@ async def play(ctx, *, url):
     player = await YTDLSource.from_url(url, loop=bot.loop)
     channel = ctx.author.voice.channel
     vc = await channel.connect()
-    title = await ctx.send('Now playing: ' + player.title )
+    
+    title = await ctx.send('Now playing: ' + player.title)
     await title.add_reaction(random.choice(dance_emoji))
+    
     vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-    #vc.is_playing()
-    #vc.pause()
-    #vc.resume()
-    #vc.stop()
+    
+    while vc.is_playing():
+        await asyncio.sleep(15)
+    await vc.disconnect()
     
 bot.run(DISCORD_TOKEN)
