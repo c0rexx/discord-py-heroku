@@ -244,7 +244,7 @@ async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
 @bot.command(name='weather', help="Get location's weather.")
 async def weather(ctx, *, arg):
     city = 'Prague'
-    if len(arg) != 0:
+    if arg:
         city = arg
     url = ('http://api.openweathermap.org/data/2.5/weather?q=' + city + '&units=metric&lang=en&appid=' + WEATHER_TOKEN)
     res = requests.get(url).json()
@@ -253,7 +253,7 @@ async def weather(ctx, *, arg):
         embed = discord.Embed(title='Weather', description=description)
         image = 'http://openweathermap.org/img/w/' + res['weather'][0]['icon'] + '.png'
         embed.set_thumbnail(url=image)
-        weather = res['weather'][0]['main'] + ' ( ' + res['weather'][0]['description'] + ' ) '
+        weather = res['weather'][0]['main'] + ' (' + res['weather'][0]['description'] + ') '
         temp = str(res['main']['temp']) + '°C'
         feels_temp = str(res['main']['feels_like']) + '°C'
         humidity = str(res['main']['humidity']) + '%'
