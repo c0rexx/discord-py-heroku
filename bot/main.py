@@ -242,10 +242,10 @@ async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
         await ctx.send(result)
 
 @bot.command(name='weather', help="Get location's weather.")
-async def weather(ctx, *args):
+async def weather(ctx, *, arg):
     city = 'Prague'
-    if len(args) != 0:
-        city = '' ''.join(map(str, args))
+    if len(arg) != 0:
+        city = arg
     url = ('http://api.openweathermap.org/data/2.5/weather?q=' + city + '&units=metric&lang=en&appid=' + WEATHER_TOKEN)
     res = requests.get(url).json()
     if str(res['cod']) == '200':
