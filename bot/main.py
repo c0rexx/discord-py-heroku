@@ -208,7 +208,7 @@ async def rand_date(ctx):
     else:
         await status.delete()
         fact = await ctx.send('This comic came out in ' + custom_strftime('%B {S}, %Y', rd) + '. On this day also in the year ' + random.choice(facts))
-        await fact.add_reaction(random.choice(basic_emoji.get('forsenScoots')))
+        await fact.add_reaction(random.choice(scoots_emoji))
 
 @bot.command(name='garf', help="Get specific Garfield comic, format: 'Year Month Day'.")
 async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
