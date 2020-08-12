@@ -21,11 +21,14 @@ GOOGLE_CLOUD_CREDENTIALS = service_account.Credentials.from_service_account_info
 
 bot = commands.Bot(command_prefix='p.')
 
-si_emoji = '<:Si:523966164704034837>'
-smug_emoji = '<:forsenSmug:736973361283858442>'
-sad_emoji = '<:Sadge:696437945392955453>'
-pepega_emoji = '<:Pepega:739020602194657330>'
-forsenScoots_emoji = '<:forsenScoots:736973346142552195>'
+basic_emoji = {
+    'Si' : '<:Si:523966164704034837>',
+    'Sadge' : '<:Sadge:696437945392955453>',
+    'Pepega' : '<:Pepega:739020602194657330>',
+    'forsenSmug' : '<:forsenSmug:736973361283858442>',
+    'forsenScoots' : '<:forsenScoots:736973346142552195>',
+    'forsenT' : '<:forsenT:743128058545832048>'
+}
 scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
     '<:OMGScoots:736973384570634321>'
@@ -85,8 +88,8 @@ async def on_ready():
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        await ctx.message.add_reaction(si_emoji)
-        await ctx.send(pepega_emoji + '📣' + ' COMMAND NOT FOUND')
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
+        await ctx.send(basic_emoji.get('Pepega') + '📣' + ' COMMAND NOT FOUND')
         return
     raise error
     
@@ -115,7 +118,7 @@ async def garf_comic(channel, date):
     except:
         fail = await channel.send('Bad response from ' + url + '.')
         await status.delete()
-        await fail.add_reaction(si_emoji)
+        await fail.add_reaction(basic_emoji.get('Si'))
         return
     await status.edit(content='Parsing ' + str(round((len(response.content)/1024.0),2)) + 'kB...')
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -124,7 +127,7 @@ async def garf_comic(channel, date):
     if not picture or not picture[0]:
         fail = await channel.send('Garfield comic not found on ' + url + '.')
         await status.delete()
-        await fail.add_reaction(si_emoji)
+        await fail.add_reaction(basic_emoji.get('Si'))
         return
     await status.edit(content='Garfield comic found.')
     link = picture[0].img['src']
@@ -133,11 +136,11 @@ async def garf_comic(channel, date):
 
 @bot.command(name='roll', help='Generate a random number between 1 and 100 by default.')
 async def roll(ctx, input: str = '100'):
-    result = "No, I don't think so. " + smug_emoji
+    result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
     if input.isnumeric():
         result = str(random.randint(1, int(input)))
     else:
-        await ctx.message.add_reaction(si_emoji)
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
     await ctx.send(result)
 
 @bot.command(name='today', help="Get today's Garfield comic.")
@@ -168,7 +171,7 @@ async def tomorrow(ctx):
     if now.hour < 5 or (now.hour==5 and now.minute < 7):
         hours += 24
     response = "You will have to be patient, tomorrow's comic comes out in " + str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2) + '.'
-    await ctx.message.add_reaction(si_emoji)
+    await ctx.message.add_reaction(basic_emoji.get('Si'))
     await ctx.send(response)
 
 def suffix(d):
@@ -196,24 +199,24 @@ async def rand_date(ctx):
         wiki_success = False
     if not wiki_success:
         await status.delete()
-        fact = await ctx.send("Couldn't access wikipedia entry. " + sad_emoji + '\nThis comic came out in ' + custom_strftime('%B {S}, %Y', rd) + '.')
+        fact = await ctx.send("Couldn't access wikipedia entry. " + basic_emoji.get('Sadge') + '\nThis comic came out in ' + custom_strftime('%B {S}, %Y', rd) + '.')
     elif not facts:
         await status.delete()
         fact = await ctx.send("Didn't find any interesting fact on wikipedia.com/wiki/" + rd.strftime('%B') + '_' + str(rd.day) + ". Probably retarded formatting on this page for the 'events' section." + sad_emoji )
     else:
         await status.delete()
         fact = await ctx.send('This comic came out in ' + custom_strftime('%B {S}, %Y', rd) + '. On this day also in the year ' + random.choice(facts))
-        await fact.add_reaction(random.choice(scoots_emoji))
+        await fact.add_reaction(random.choice(basic_emoji.get('forsenScoots')))
 
 @bot.command(name='garf', help="Get specific Garfield comic, format: 'Year Month Day'.")
 async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
-    result = "No, I don't think so. " + smug_emoji
+    result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
     if not arg1 or not arg2 or not arg3:
         result = "Date looks like 'Year Month Day', ie. '2001 9 11' :)."
-        await ctx.message.add_reaction(si_emoji)
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
     elif not arg1.isnumeric() or not arg2.isnumeric() or not arg3.isnumeric():
         result = "That's not even a numeric date."
-        await ctx.message.add_reaction(si_emoji)
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
     else:
         a1 = int(arg1)
         a2 = int(arg2)
@@ -228,16 +231,16 @@ async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
             correctDate = False
         if not correctDate:
             result = 'No..? You must be using the wrong calendar.'
-            await ctx.message.add_reaction(si_emoji)
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
         elif newDate > now:
             result = 'You will have to wait for that day to come.'
-            await ctx.message.add_reaction(si_emoji)
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
         elif newDate >= datetime.date(1978, 6, 19):
             result = ''
             await garf_comic(ctx.channel, datetime.date(a1, a2, a3))
         else:
             result = "Unfortunately, Garfield didn't exist before 19th June 1978."
-            await ctx.message.add_reaction(si_emoji)
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
     if result:
         await ctx.send(result)
 
@@ -270,12 +273,12 @@ async def weather(ctx, *, arg):
         await ctx.send(embed=embed)
     elif str(res['cod']) == '404':
         msg = await ctx.send('City not found')
-        await msg.add_reaction(sad_emoji)
+        await msg.add_reaction(basic_emoji.get('Sadge'))
     elif str(res['cod']) == '401':
         msg = await ctx.send('API key broke, have a nice day.')
-        await msg.add_reaction(si_emoji)
+        await msg.add_reaction(basic_emoji.get('Si'))
     else:
-        await ctx.send('City not found! ' + sad_emoji + ' (' + res['message'] + ')')
+        await ctx.send('City not found! ' + basic_emoji.get('Sadge') + ' (' + res['message'] + ')')
 
 @bot.command(name='fact', help="Get random fact about a day.")
 async def fact(ctx, arg1: str = '', arg2: str = ''):
@@ -286,7 +289,7 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
         msg = 'On this day in the year '
     elif not arg1.isnumeric() or not arg2.isnumeric():
         await ctx.send("That's not even a numeric date. Try 'Month Day'.")
-        await ctx.message.add_reaction(si_emoji)
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     else:
         a1 = int(arg1)
@@ -301,7 +304,7 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
             correctDate = False
         if not correctDate:
             await ctx.send("No..? You must be using the wrong calendar. Try 'Month Day'.")
-            await ctx.message.add_reaction(si_emoji)
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
             return
 
     facts = None
@@ -316,7 +319,7 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
         wiki_success = False
     if not wiki_success:
         await status.delete()
-        fact = await ctx.send("Couldn't access wikipedia entry " + sad_emoji)
+        fact = await ctx.send("Couldn't access wikipedia entry " + basic_emoji.get('Sadge'))
     elif not facts:
         await status.delete()
         fact = await ctx.send("Didn't find any interesting fact on wikipedia.com/wiki/" + date.strftime('%B') + '_' + str(date.day) + ". Probably retarded formatting on this page for the 'events' section." + sad_emoji )
@@ -334,11 +337,11 @@ def detect_text(url):
         image_bytes = io.BytesIO(response.content)
         image = vision.types.Image(content=image_bytes.read())
     except:
-        return "Couldn't download image."
+        return "Couldn't download image " + basic_emoji.get('Si') 
     cloud_response = google_vision.text_detection(image=image)
     texts = cloud_response.text_annotations
     if not texts:
-        return 'No text detected.'
+        return "Can't see shit! " + basic_emoji.get('forsenT')
     else:
         return texts[0].description
 
@@ -346,7 +349,7 @@ def detect_text(url):
 async def read(ctx, arg1: str = ''):
     if not arg1 and not ctx.message.attachments:
         await ctx.send('No image provided.')
-        await ctx.message.add_reaction(si_emoji)
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     url = ''
     if arg1:
@@ -359,8 +362,8 @@ async def read(ctx, arg1: str = ''):
         text = '```' + detect_text(url)[:1994] + '```'
     except:
         await status.delete()
-        await ctx.send("No, I don't think so. " + smug_emoji)
-        await ctx.message.add_reaction(si_emoji)
+        await ctx.send("No, I don't think so. " + basic_emoji.get('forsenSmug'))
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     await status.delete()
     await ctx.send(text)
@@ -373,8 +376,8 @@ async def translate(ctx, *args):
     
     # No text entered -> nothing to translate
     if not args:
-        await ctx.send("Translate what? " + pepega_emoji + '\n' + smug_emoji)
-        await ctx.message.add_reaction(si_emoji)
+        await ctx.send("Translate what? " + basic_emoji.get('Pepega') + '\n' + basic_emoji.get('forsenSmug'))
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     
     # Combine tuple into one long string
@@ -445,7 +448,7 @@ song_queue = []
 async def play(ctx, url: str = ''):
     if not url or not 'youtube.com/watch?v=' in url:
         msg = await ctx.send("No valid youtube url provided.")
-        await msg.add_reaction(si_emoji)
+        await msg.add_reaction(basic_emoji.get('Si'))
         return
     
     channel = None
@@ -453,7 +456,7 @@ async def play(ctx, url: str = ''):
         channel = ctx.author.voice.channel
     except:
         msg = await ctx.send("You're not connected to a voice channel.")
-        await msg.add_reaction(si_emoji)
+        await msg.add_reaction(basic_emoji.get('Si'))
         return
         
     global vc
@@ -496,7 +499,7 @@ async def queue(ctx):
 async def clear(ctx):
     global song_queue
     if not song_queue:
-        await ctx.send('Queue already empty ' + forsenScoots_emoji)
+        await ctx.send('Queue already empty ' + basic_emoji.get('forsenScoots'))
         return
     song_queue = []
     await ctx.send('Queue emptied.')
@@ -508,6 +511,6 @@ async def skip(ctx):
         vc.stop()
     except:
         msg = await ctx.send("Nothing is playing.")
-        await msg.add_reaction(si_emoji)
+        await msg.add_reaction(basic_emoji.get('Si'))
     
 bot.run(DISCORD_TOKEN)
