@@ -111,7 +111,7 @@ def format_date(date):
 async def garf_comic(channel, date):
     link = 'Something went wrong.'
     url = 'http://www.gocomics.com/garfield/' + format_date(date)
-    status = await channel.send('Sending HTTP request... ' + basic_emoji.get('docSpin')
+    status = await channel.send('Sending HTTP request... ' + basic_emoji.get('docSpin'))
     response = None
     try:
         response = requests.get(url, headers)
@@ -121,7 +121,7 @@ async def garf_comic(channel, date):
         await status.delete()
         await fail.add_reaction(basic_emoji.get('Si'))
         return
-    await status.edit(content='Parsing ' + str(round((len(response.content)/1024.0),2)) + 'kB... ' + basic_emoji.get('docSpin')
+    await status.edit(content='Parsing ' + str(round((len(response.content)/1024.0),2)) + 'kB... ' + basic_emoji.get('docSpin'))
     soup = BeautifulSoup(response.content, 'html.parser')
     await status.edit(content='Looking for Garfield comic...')
     picture = soup.find_all('picture', attrs={'class': 'item-comic-image'})
@@ -190,7 +190,7 @@ async def rand_date(ctx):
     rd = random_date(first, last)
     await garf_comic(ctx.channel, rd)
     facts = None
-    status = await ctx.send('Looking up an interesting fact... ' + basic_emoji.get('docSpin')
+    status = await ctx.send('Looking up an interesting fact... ' + basic_emoji.get('docSpin'))
     fact = ''
     wiki_success = True
     try:
@@ -252,6 +252,7 @@ async def weather(ctx, *args):
     city = 'Prague'
     if args:
         city = ''.join(args)
+    city.replace(" ", "")
     url = ('http://api.openweathermap.org/data/2.5/weather?q=' + city + '&units=metric&lang=en&appid=' + WEATHER_TOKEN)
     res = requests.get(url).json()
     if str(res['cod']) == '200':
