@@ -111,7 +111,7 @@ def format_date(date):
 async def garf_comic(channel, date):
     link = 'Something went wrong.'
     url = 'http://www.gocomics.com/garfield/' + format_date(date)
-    status = await channel.send('Sending HTTP request...')
+    status = await channel.send('Sending HTTP request... ' + basic_emoji.get('docSpin')
     response = None
     try:
         response = requests.get(url, headers)
@@ -121,7 +121,7 @@ async def garf_comic(channel, date):
         await status.delete()
         await fail.add_reaction(basic_emoji.get('Si'))
         return
-    await status.edit(content='Parsing ' + str(round((len(response.content)/1024.0),2)) + 'kB...')
+    await status.edit(content='Parsing ' + str(round((len(response.content)/1024.0),2)) + 'kB... ' + basic_emoji.get('docSpin')
     soup = BeautifulSoup(response.content, 'html.parser')
     await status.edit(content='Looking for Garfield comic...')
     picture = soup.find_all('picture', attrs={'class': 'item-comic-image'})
@@ -175,9 +175,10 @@ async def tomorrow(ctx):
     await ctx.message.add_reaction(basic_emoji.get('Si'))
     await ctx.send(response)
 
+# Adds 'st', 'nd', 'rd' to numbers
 def suffix(d):
     return 'th' if 11<=d<=13 else {1:'st',2:'nd',3:'rd'}.get(d%10, 'th')
-
+# Formats datetime using above function
 def custom_strftime(format, t):
     return t.strftime(format).replace('{S}', str(t.day) + suffix(t.day))
 
@@ -189,7 +190,7 @@ async def rand_date(ctx):
     rd = random_date(first, last)
     await garf_comic(ctx.channel, rd)
     facts = None
-    status = await ctx.send('Looking up an interesting fact...')
+    status = await ctx.send('Looking up an interesting fact... ' + basic_emoji.get('docSpin')
     fact = ''
     wiki_success = True
     try:
