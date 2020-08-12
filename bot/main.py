@@ -27,7 +27,8 @@ basic_emoji = {
     'Pepega' : '<:Pepega:739020602194657330>',
     'forsenSmug' : '<:forsenSmug:736973361283858442>',
     'forsenScoots' : '<:forsenScoots:736973346142552195>',
-    'forsenT' : '<:forsenT:743128058545832048>'
+    'forsenT' : '<:forsenT:743128058545832048>',
+    'docSpin' : '<a:docSpin:743133871889055774>'
 }
 scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
@@ -328,48 +329,51 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
         fact = await ctx.send(msg + random.choice(facts))
         await fact.add_reaction(random.choice(scoots_emoji))
 
+# Uses Google Cloud VisionAI
 google_vision = vision.ImageAnnotatorClient(credentials=GOOGLE_CLOUD_CREDENTIALS)
-
 def detect_text(url):
+    # Download image from url
     response = requests.get(url)
     image = None
     try:
+        # Convert data to image
         image_bytes = io.BytesIO(response.content)
         image = vision.types.Image(content=image_bytes.read())
     except:
-        return "Couldn't download image " + basic_emoji.get('Si') 
+        return "Couldn't download and process image " + basic_emoji.get('Si') 
+    
+    # Let VisionAI do its thing
     cloud_response = google_vision.text_detection(image=image)
     texts = cloud_response.text_annotations
+    # Couldn't read anything
     if not texts:
         return "Can't see shit! " + basic_emoji.get('forsenT')
+    # Else format text
     else:
-        return texts[0].description
+        return '```' + texts[0].description[:1994] + '```'
 
 @bot.command(name='read', help='Read image.')
 async def read(ctx, arg1: str = ''):
+    # Check whether user provided url or embedded image
     if not arg1 and not ctx.message.attachments:
         await ctx.send('No image provided.')
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
+    # Get url to the image
     url = ''
     if arg1:
         url = arg1
     else:
         url = ctx.message.attachments[0].url
-    status = await ctx.send('Processing...')
-    text = ''
-    try:
-        text = '```' + detect_text(url)[:1994] + '```'
-    except:
-        await status.delete()
-        await ctx.send("No, I don't think so. " + basic_emoji.get('forsenSmug'))
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        return
+    
+    # Display status
+    status = await ctx.send('Processing... ' + basic_emoji.get('docSpin'))
+    # Attempt to detect text
+    text = detect_text(url)
     await status.delete()
     await ctx.send(text)
     
 translator = googletrans.Translator()
-
 @bot.command(name='translate', help="Translate text.")
 async def translate(ctx, *args):
     result = None
