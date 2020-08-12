@@ -251,8 +251,7 @@ async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
 async def weather(ctx, *args):
     city = 'Prague'
     if args:
-        city = ''.join(args)
-    city.replace(" ", "")
+        city = ' '.join(str(i) for i in args)
     url = ('http://api.openweathermap.org/data/2.5/weather?q=' + city + '&units=metric&lang=en&appid=' + WEATHER_TOKEN)
     res = requests.get(url).json()
     if str(res['cod']) == '200':
@@ -384,7 +383,7 @@ async def translate(ctx, *args):
     
     result = None
     # Combine tuple into one long string
-    arg = ''.join(args)
+    arg = ' '.join(str(i) for i in args)
     # Get first word
     input = arg.split(' ', 1)
     # If it's an ISO639-1 language code, translate to that language
