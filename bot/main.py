@@ -245,11 +245,12 @@ async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
     if result:
         await ctx.send(result)
 
+# WideHard - from https://github.com/Toaster192/rubbergod/blob/master/cogs/weather.py
 @bot.command(name='weather', help="Get location's weather.")
-async def weather(ctx, *, arg):
+async def weather(ctx, *args):
     city = 'Prague'
-    if arg:
-        city = arg
+    if args:
+        city = ''.join(args)
     url = ('http://api.openweathermap.org/data/2.5/weather?q=' + city + '&units=metric&lang=en&appid=' + WEATHER_TOKEN)
     res = requests.get(url).json()
     if str(res['cod']) == '200':
@@ -273,7 +274,7 @@ async def weather(ctx, *, arg):
         embed.add_field(name='Visibility', value=visibility, inline=True)
         await ctx.send(embed=embed)
     elif str(res['cod']) == '404':
-        msg = await ctx.send('City not found')
+        msg = await ctx.send('City not found.')
         await msg.add_reaction(basic_emoji.get('Sadge'))
     elif str(res['cod']) == '401':
         msg = await ctx.send('API key broke, have a nice day.')
@@ -340,7 +341,7 @@ def detect_text(url):
         image_bytes = io.BytesIO(response.content)
         image = vision.types.Image(content=image_bytes.read())
     except:
-        return "Couldn't download and process image " + basic_emoji.get('Si') 
+        return "That's not an image? " + basic_emoji.get('Pepega') + '\n' + basic_emoji.get('forsenSmug')
     
     # Let VisionAI do its thing
     cloud_response = google_vision.text_detection(image=image)
@@ -348,22 +349,19 @@ def detect_text(url):
     # Couldn't read anything
     if not texts:
         return "Can't see shit! " + basic_emoji.get('forsenT')
-    # Else format text
+    # Else format text (max. 2000 characters)
     else:
         return '```' + texts[0].description[:1994] + '```'
 
 @bot.command(name='read', help='Read image.')
-async def read(ctx, arg1: str = ''):
+async def read(ctx, url: str = ''):
     # Check whether user provided url or embedded image
-    if not arg1 and not ctx.message.attachments:
-        await ctx.send('No image provided.')
+    if not url and not ctx.message.attachments:
+        await ctx.send("Read what? " + basic_emoji.get('Pepega') + '\n' + basic_emoji.get('forsenSmug'))
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     # Get url to the image
-    url = ''
-    if arg1:
-        url = arg1
-    else:
+    if not url:
         url = ctx.message.attachments[0].url
     
     # Display status
@@ -376,14 +374,13 @@ async def read(ctx, arg1: str = ''):
 translator = googletrans.Translator()
 @bot.command(name='translate', help="Translate text.")
 async def translate(ctx, *args):
-    result = None
-    
     # No text entered -> nothing to translate
     if not args:
         await ctx.send("Translate what? " + basic_emoji.get('Pepega') + '\n' + basic_emoji.get('forsenSmug'))
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     
+    result = None
     # Combine tuple into one long string
     arg = ''.join(args)
     # Get first word
@@ -397,7 +394,7 @@ async def translate(ctx, *args):
         
     # Send the translated text and info about origin and destination languages
     msg = 'Translated from `' + googletrans.LANGUAGES.get(result.src) + '` ' + emoji_locale.code_to_country(result.src) + ' to `' + googletrans.LANGUAGES.get(result.dest) + '` ' + emoji_locale.code_to_country(result.dest) + '.'
-    await ctx.send(msg + '\n```' + result.text[:1900] + '```')
+    await ctx.send(msg + '\n```' + result.text[:1950] + '```')
 
 # https://stackoverflow.com/questions/56060614/how-to-make-a-discord-bot-play-youtube-audio
 youtube_dl.utils.bug_reports_message = lambda: ''
@@ -436,7 +433,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
 
         if 'entries' in data:
-            # take first item from a playlist
+            # Take first item from a playlist
             data = data['entries'][0]
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
@@ -478,7 +475,7 @@ async def play(ctx, url: str = ''):
     while song_queue:
         song = song_queue.pop(0)
         player = await YTDLSource.from_url(song, loop=bot.loop)
-        title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing: 🎶 `' + player.title + '` ' + random.choice(dance_emoji))
+        title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: `' + player.title + '` ' + random.choice(dance_emoji))
         await title.add_reaction(random.choice(dance_react))
 
         vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
