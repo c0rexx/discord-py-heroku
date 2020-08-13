@@ -456,7 +456,7 @@ def youtube_search(title):
     # Parse response
     for search_result in search_response.get('items', []):
         if search_result['id']['kind'] == 'youtube#video':
-            videos.append('%s [%s]' % (search_result['snippet']['title'], search_result['snippet']['channelTitle']), search_result['id']['videoId'])
+            videos.append((search_result['snippet']['title'] + '[' search_result['snippet']['channelTitle'] + ']', search_result['id']['videoId']))
         
         if len(videos) == 5:
             return videos
@@ -487,8 +487,6 @@ async def play(ctx, *args):
     else:
         videos = []
         try:
-            # debugging forsenHead
-            await ctx.send('Searching for ```' + arg + '```')
             videos = youtube_search(arg)
         except:
             msg = await ctx.send('HTTP error. ' + basic_emoji.get('Sadge'))
