@@ -503,7 +503,7 @@ async def play(ctx, *args):
             i = 1
             for pair in videos:
                 poll = poll + str(i) + '. ' + pair[0] + '\n'
-                i++
+                i = i + 1
             msg = await ctx.send(poll)
             await msg.add_reaction('1️⃣')
             await msg.add_reaction('2️⃣')
