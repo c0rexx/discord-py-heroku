@@ -458,8 +458,8 @@ def youtube_search(title):
         if search_result['id']['kind'] == 'youtube#video':
             videos.append('%s [%s]' % (search_result['snippet']['title'], search_result['snippet']['channelTitle']), search_result['id']['videoId'])
         
-      if len(videos) == 5:
-          return videos
+        if len(videos) == 5:
+            return videos
   return videos
 
 BOT_ID = os.getenv('BOT_ID')
