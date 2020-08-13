@@ -14,10 +14,12 @@ from bs4 import BeautifulSoup
 from discord.ext import commands
 from google.cloud import vision
 from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 WEATHER_TOKEN = os.getenv('WEATHER_TOKEN')
 GOOGLE_CLOUD_CREDENTIALS = service_account.Credentials.from_service_account_info(json.loads(os.getenv('GOOGLE_CLIENT_SECRETS')))
+YOUTUBE_API_TOKEN = os.getenv('YOUTUBE_API_TOKEN')
 
 bot = commands.Bot(command_prefix='p.')
 
@@ -446,11 +448,27 @@ discord.opus.load_opus(ctypes.util.find_library('opus'))
 vc = None
 song_queue = []
 
+youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_TOKEN)
+def youtube_search(title):
+    search_response = youtube.search().list(q=title, part='id,snippet', maxResults=10).execute()
+    videos = []
+    
+    # Parse response
+    for search_result in search_response.get('items', []):
+      if search_result['id']['kind'] == 'youtube#video':
+        videos.append('%s [%s]' % (search_result['snippet']['title'], search_result['snippet']['channelTitle']), search_result['id']['videoId'])
+        
+      if len(videos) == 5:
+        return videos
+  return videos
+
+BOT_ID = os.getenv('BOT_ID')
+
 @bot.command(name='play', help="Join VC and play music.")
-async def play(ctx, url: str = ''):
-    if not url or not 'youtube.com/watch?v=' in url:
-        msg = await ctx.send("No valid youtube url provided.")
-        await msg.add_reaction(basic_emoji.get('Si'))
+async def play(ctx, *args):
+    if not args:
+        await ctx.send("Play what? " + basic_emoji.get('Pepega') + '\n' + basic_emoji.get('forsenSmug'))
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     
     channel = None
@@ -460,6 +478,57 @@ async def play(ctx, url: str = ''):
         msg = await ctx.send("You're not connected to a voice channel.")
         await msg.add_reaction(basic_emoji.get('Si'))
         return
+    
+    arg = ' '.join(str(i) for i in args)
+    url = ''
+    
+    if 'youtube.com/watch?v=' in arg:
+        url = arg
+    else:
+        videos = None
+        try:
+            videos = youtube_search(arg)
+        except:
+            msg = await ctx.send('HTTP error. ' + basic_emoji.get('Sadge'))
+            await msg.add_reaction(basic_emoji.get('Si'))
+            return
+        if len(videos) == 0:
+            msg = await ctx.send('0 videos found. ' + basic_emoji.get('Sadge'))
+            await msg.add_reaction(basic_emoji.get('Si'))
+            return
+        elif len(videos) == 1:
+            url = 'https://www.youtube.com/watch?v=' + videos[0][1]
+        else:
+            poll = ''
+            i = 1
+            for title, video_id in videos:
+                poll += str(i++) + '. ' + title + '\n'
+            msg = await ctx.send(poll)
+            await msg.add_reaction('1️⃣')
+            await msg.add_reaction('2️⃣')
+            await msg.add_reaction('3️⃣')
+            await msg.add_reaction('4️⃣')
+            await msg.add_reaction('5️⃣')
+            def check(reaction, user):
+                return user == ctx.message.author and user != BOT_ID and str(reaction.emoji) == '1️⃣' or '2️⃣' or '3️⃣' or '4️⃣' or '5️⃣'
+            
+            try:
+                reaction, user = await client.wait_for('reaction_add', timeout=120, check=check)
+            except asyncio.TimeoutError:
+                await ctx.send('No option chosen (timed out) ' + basic_emojit.get('Si'))
+                return
+            else:
+                url = 'https://www.youtube.com/watch?v='
+                if str(reaction.emoji) == '1️⃣':
+                    url += videos[0][1]
+                elif str(reaction.emoji) == '2️⃣':
+                    url += videos[1][1]
+                elif str(reaction.emoji) == '3️⃣':
+                    url += videos[2][1]
+                elif str(reaction.emoji) == '4️⃣':
+                    url += videos[3][1]
+                elif str(reaction.emoji) == '5️⃣':
+                    url += videos[4][1]
         
     global vc
     if vc is None:
