@@ -567,7 +567,7 @@ async def play(ctx, *args):
     global song_queue
     song_queue.append(url)
     if vc.is_playing():
-        await ctx.send('`' + url + '` added to queue.')
+        await ctx.send('Song added to queue.')
         return
     
     while song_queue:
