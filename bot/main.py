@@ -485,7 +485,7 @@ async def play(ctx, *args):
     if 'youtube.com/watch?v=' in arg:
         url = arg
     else:
-        videos = None
+        videos = []
         try:
             videos = youtube_search(arg)
         except:
@@ -502,7 +502,8 @@ async def play(ctx, *args):
             poll = ''
             i = 1
             for pair in videos:
-                poll += str(i++) + '. ' + pair[0] + '\n'
+                poll = poll + str(i) + '. ' + pair[0] + '\n'
+                i++
             msg = await ctx.send(poll)
             await msg.add_reaction('1️⃣')
             await msg.add_reaction('2️⃣')
