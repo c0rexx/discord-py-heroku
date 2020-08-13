@@ -514,7 +514,7 @@ async def play(ctx, *args):
                 return user == ctx.message.author and user != BOT_ID and str(reaction.emoji) == '1️⃣' or '2️⃣' or '3️⃣' or '4️⃣' or '5️⃣'
             
             try:
-                reaction, user = await client.wait_for('reaction_add', timeout=120, check=check)
+                reaction, user = await bot.wait_for('reaction_add', timeout=120, check=check)
             except asyncio.TimeoutError:
                 await ctx.send('No option chosen (timed out) ' + basic_emojit.get('Si'))
                 return
