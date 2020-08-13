@@ -487,6 +487,8 @@ async def play(ctx, *args):
     else:
         videos = []
         try:
+            # debugging forsenHead
+            await ctx.send('Searching for ```' + arg + '```')
             videos = youtube_search(arg)
         except:
             msg = await ctx.send('HTTP error. ' + basic_emoji.get('Sadge'))
