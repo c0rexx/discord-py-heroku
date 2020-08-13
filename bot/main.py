@@ -456,7 +456,7 @@ def youtube_search(title):
     # Parse response
     for search_result in search_response.get('items', []):
         if search_result['id']['kind'] == 'youtube#video':
-            videos.append((search_result['snippet']['title'] + '[' + search_result['snippet']['channelTitle'] + ']', search_result['id']['videoId']))
+            videos.append((search_result['snippet']['title'] + ' [' + search_result['snippet']['channelTitle'] + ']', search_result['id']['videoId']))
         
         if len(videos) == 5:
             return videos
@@ -516,7 +516,7 @@ async def play(ctx, *args):
             try:
                 reaction, user = await bot.wait_for('reaction_add', timeout=120, check=check)
             except asyncio.TimeoutError:
-                await ctx.send('No option chosen (timed out) ' + basic_emojit.get('Si'))
+                await ctx.send('No option chosen (timed out) ' + basic_emoji.get('Si'))
                 return
             else:
                 url = 'https://www.youtube.com/watch?v='
@@ -530,6 +530,7 @@ async def play(ctx, *args):
                     url += videos[3][1]
                 elif str(reaction.emoji) == '5️⃣':
                     url += videos[4][1]
+            await msg.delete()
         
     global vc
     if vc is None:
@@ -540,7 +541,7 @@ async def play(ctx, *args):
     global song_queue
     song_queue.append(url)
     if vc.is_playing():
-        await ctx.send("Song added to queue.")
+        await ctx.send('`' + url + '` added to queue.')
         return
     
     while song_queue:
