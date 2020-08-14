@@ -540,10 +540,11 @@ async def play(ctx, *args):
             # Add options
             for number in valid_numbers:
                 await msg.add_reaction(number)
+            await msg.add_reaction('❌')
                 
             # Checks if added reaction is the one we're waiting for
             def check(reaction, user):
-                return user == ctx.message.author and str(reaction.emoji) in valid_numbers
+                return user == ctx.message.author and (str(reaction.emoji) in valid_numbers or str(reaction.emoji) == '❌')
                        
             reaction = None
             try:
@@ -554,7 +555,8 @@ async def play(ctx, *args):
                 return
             # Create chosen URL
             else:
-                url = 'https://www.youtube.com/watch?v=' + videos[valid_numbers.index(str(reaction.emoji))][1]
+                if str(reaction.emoji) != '❌'
+                    url = 'https://www.youtube.com/watch?v=' + videos[valid_numbers.index(str(reaction.emoji))][1]
             # Delete poll
             await msg.delete()
         
