@@ -555,7 +555,7 @@ async def play(ctx, *args):
                 return
             # Create chosen URL
             else:
-                if str(reaction.emoji) != '❌'
+                if str(reaction.emoji) != '❌':
                     url = 'https://www.youtube.com/watch?v=' + videos[valid_numbers.index(str(reaction.emoji))][1]
             # Delete poll
             await msg.delete()
