@@ -138,6 +138,7 @@ async def garf_comic(channel, date):
     await channel.send(link)
 
 @bot.command(name='roll', help='Generate a random number between 1 and 100 by default.')
+@commands.guild_only()
 async def roll(ctx, input: str = '100'):
     result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
     if input.isnumeric():
