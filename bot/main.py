@@ -535,34 +535,24 @@ async def play(ctx, *args):
                 valid_numbers.append(number_emojis[i])
                 i += 1
             # Display message with available videos
-            msg = await ctx.send(poll)
-            # Add 'poll' options
-            for number in valid_numbers:
-                await msg.add_reaction(number)
+            msg = await ctx.send(poll)            
                 
             # Checks if added reaction is the one we're waiting for
             def check(reaction, user):
                 return user == ctx.message.author and str(reaction.emoji) in valid_numbers
             
-            # Wait for user to choose 1-5
+            # Watch for reactions
             try:
                 reaction, user = await bot.wait_for('reaction_add', timeout=120, check=check)
+                # Start adding options after initiating coroutine (will react immediately)
+                for number in valid_numbers:
+                    await msg.add_reaction(number)
             except asyncio.TimeoutError:
                 await ctx.send('No option chosen (timed out) ' + basic_emoji.get('Si'))
                 return
             # Create chosen URL
             else:
-                url = 'https://www.youtube.com/watch?v='
-                if str(reaction.emoji) == '1️⃣':
-                    url += videos[0][1]
-                elif str(reaction.emoji) == '2️⃣':
-                    url += videos[1][1]
-                elif str(reaction.emoji) == '3️⃣':
-                    url += videos[2][1]
-                elif str(reaction.emoji) == '4️⃣':
-                    url += videos[3][1]
-                elif str(reaction.emoji) == '5️⃣':
-                    url += videos[4][1]
+                url = 'https://www.youtube.com/watch?v=' + videos[valid_numbers.index(str(reaction.emoji))][1]
             # Delete poll
             await msg.delete()
         
