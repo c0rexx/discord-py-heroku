@@ -94,6 +94,11 @@ async def on_command_error(ctx, error):
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         await ctx.send(basic_emoji.get('Pepega') + '📣' + ' COMMAND NOT FOUND')
         return
+    elif isinstance(error, commands.errors.NoPrivateMessage):
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
+        await ctx.send('Not available in DMs.')
+        print(ctx.message.author.name + ' sent forbidden command DM request.')
+        return
     raise error
     
 def random_date(start, end):
@@ -138,7 +143,6 @@ async def garf_comic(channel, date):
     await channel.send(link)
 
 @bot.command(name='roll', help='Generate a random number between 1 and 100 by default.')
-@commands.guild_only()
 async def roll(ctx, input: str = '100'):
     result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
     if input.isnumeric():
@@ -358,6 +362,7 @@ def detect_text(url):
         return '```' + texts[0].description[:1994] + '```'
 
 @bot.command(name='read', help='Read image.')
+@commands.guild_only()
 async def read(ctx, url: str = ''):
     # Check whether user provided url or embedded image
     if not url and not ctx.message.attachments:
@@ -377,6 +382,7 @@ async def read(ctx, url: str = ''):
     
 translator = googletrans.Translator()
 @bot.command(name='translate', help="Translate text.")
+@commands.guild_only()
 async def translate(ctx, *args):
     # No text entered -> nothing to translate
     if not args:
@@ -471,6 +477,7 @@ BOT_ID = str(os.getenv('BOT_ID'))
 # This works properly only on one server at a time
 # That's fine since this bot is a 'private' one, only made for one server
 @bot.command(name='play', help="Join VC and play music.")
+@commands.guild_only()
 async def play(ctx, *args):
     # No arguments -> exit
     if not args:
@@ -585,6 +592,7 @@ async def play(ctx, *args):
     vc = None
     
 @bot.command(name='queue', help="Display songs in queue.")
+@commands.guild_only()
 async def queue(ctx):
     global song_queue
     if not song_queue:
@@ -596,6 +604,7 @@ async def queue(ctx):
     await ctx.send('🎶 Queue 🎶: ' + msg[:1980])
         
 @bot.command(name='clear', help="Clear song queue.")
+@commands.guild_only()
 async def clear(ctx):
     global song_queue
     if not song_queue:
@@ -605,6 +614,7 @@ async def clear(ctx):
     await ctx.send('Queue emptied.')
     
 @bot.command(name='skip', help="Skip current song.")
+@commands.guild_only()
 async def skip(ctx):
     global vc
     try:
