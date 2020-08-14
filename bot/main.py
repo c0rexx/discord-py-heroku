@@ -542,6 +542,7 @@ async def play(ctx, *args):
                 return user == ctx.message.author and str(reaction.emoji) in valid_numbers
             
             # Watch for reactions
+            reaction = None
             try:
                 reaction, user = await bot.wait_for('reaction_add', timeout=120, check=check)
                 # Start adding options after initiating coroutine (will react immediately)
