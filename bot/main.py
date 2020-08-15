@@ -524,7 +524,7 @@ async def play(ctx, *args):
         else:
             poll = ''
             i = 0
-            # Only giving 5 choices max.
+            # Only giving 5 choices max
             number_emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣']
             valid_numbers = []
             # Iterate over all (5 at most) found videos, pair = ('title - channel' : 'video_id')
