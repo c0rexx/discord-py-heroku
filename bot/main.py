@@ -500,7 +500,7 @@ async def play(ctx, *args):
     url = ''
     
     # URL contained in argument
-    if 'youtube.com/watch?v=' in arg:
+    if 'youtube.com/watch?v=' in arg or 'youtu.be' in arg:
         # Assume it's the first 'word' of combined arguments
         url = arg.partition(' ')[0]
     # Else search youtube for video title
