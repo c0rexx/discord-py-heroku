@@ -12,3 +12,7 @@
 - `weather CITY` - Get weather information for city.
 - `read` - Recognize text from an image (either embed or url).
 - `translate` - Translate text to any language (English by default, `translate fr ...` to translate to French, for example).
+- `play` - Join VC and play youtube video (and queue videos) - Either an URL or searches for video by title
+- `queue` - Display queued videos
+- `skip` - Skips currently playing video
+- `clear` - Clears queue
