@@ -410,7 +410,13 @@ async def translate(ctx, *args):
 
 # https://stackoverflow.com/questions/56060614/how-to-make-a-discord-bot-play-youtube-audio
 youtube_dl.utils.bug_reports_message = lambda: ''
+
+with open("cookies.txt", "w") as text_file:
+    print(os.getenv('COOKIE_DATA'), file=text_file)
+    
 ytdl_format_options = {
+    'cookies': 'cookies.txt',
+    'user_agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
