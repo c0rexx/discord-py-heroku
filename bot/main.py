@@ -40,9 +40,10 @@ dance_emoji = [
     '<a:forsenPls:741611256460476496>',
     '<a:forsenDiscoSnake:742013168234135664>',
     '<a:headBang:742013167890333802>',
-    '<a:KKool:742013168196517899>' + ' ' + '<a:GuitarTime:742013167554789390>',
+    '<a:KKool:742013168196517899>' + ' <a:GuitarTime:742013167554789390>',
     '<a:pepeJAM:742013167671967805>',
-    '<a:AlienPls:742014131305054239>'
+    '<a:AlienPls:742014131305054239>',
+    '<a:SHUNGITE:744474032698556477> ' + '<a:doctorDance:744473646298431510>' + ' <a:SHUNGITE:744474032698556477>'
 ]
 dance_react = [
     '<a:forsenPls:741611256460476496>',
@@ -50,7 +51,8 @@ dance_react = [
     '<a:headBang:742013167890333802>',
     '<a:KKool:742013168196517899>',
     '<a:pepeJAM:742013167671967805>',
-    '<a:AlienPls:742014131305054239>'
+    '<a:AlienPls:742014131305054239>',
+    '<a:doctorDance:744473646298431510>'
 ]
 
 headers = {
@@ -500,7 +502,7 @@ async def play(ctx, *args):
     url = ''
     
     # URL contained in argument
-    if 'youtube.com/watch?v=' in arg or 'youtu.be' in arg:
+    if 'youtube.com/watch?v=' in arg or 'youtu.be/' in arg:
         # Assume it's the first 'word' of combined arguments
         url = arg.partition(' ')[0]
     # Else search youtube for video title
@@ -576,11 +578,21 @@ async def play(ctx, *args):
     
     while song_queue:
         song = song_queue.pop(0)
-        player = await YTDLSource.from_url(song, loop=bot.loop)
+        player = None
+        status = None
+        # Attempt to download video
+        try:
+            status = await ctx.send('Downloading... ' + basic_emoji.get('docSpin'))
+            player = await YTDLSource.from_url(song, loop=bot.loop)
+        except:
+            await status.delete()
+            await ctx.send('Failed downloading `' + song + '` ' + basic_emoji.get('Si'))
+            continue
+
+        await status.delete()
+        vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
         title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: `' + player.title + '` ' + random.choice(dance_emoji))
         await title.add_reaction(random.choice(dance_react))
-
-        vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
 
         while vc.is_playing():
             await asyncio.sleep(1)
