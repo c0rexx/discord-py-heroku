@@ -638,7 +638,7 @@ async def skip(ctx):
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
         
-@bot.command(name='stop', aliases=['stop', 'leave'], help="Stop playing and leave voice.")
+@bot.command(name='stop', aliases=['leave'], help="Stop playing and leave voice.")
 @commands.guild_only()
 async def stop(ctx):
     global vc
