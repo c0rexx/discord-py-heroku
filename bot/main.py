@@ -30,7 +30,8 @@ basic_emoji = {
     'forsenSmug' : '<:forsenSmug:736973361283858442>',
     'forsenScoots' : '<:forsenScoots:736973346142552195>',
     'forsenT' : '<:forsenT:743128058545832048>',
-    'docSpin' : '<a:docSpin:743133871889055774>'
+    'docSpin' : '<a:docSpin:743133871889055774>',
+    'hackerCD' : '<a:hackerCD:744835324827402250>'
 }
 scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
@@ -120,7 +121,7 @@ def format_date(date):
 async def garf_comic(channel, date):
     link = 'Something went wrong.'
     url = 'http://www.gocomics.com/garfield/' + format_date(date)
-    status = await channel.send('Sending HTTP request... ' + basic_emoji.get('docSpin'))
+    status = await channel.send(basic_emoji.get('hackerCD') + 'Sending HTTP request... ' + basic_emoji.get('docSpin'))
     response = None
     try:
         response = requests.get(url, headers)
@@ -517,7 +518,7 @@ async def play(ctx, *args):
         try:
             videos = youtube_search(arg)
         except:
-            msg = await ctx.send('HTTP error. ' + basic_emoji.get('Sadge'))
+            msg = await ctx.send(basic_emoji.get('hackerCD') + 'HTTP error. ' + basic_emoji.get('Sadge'))
             await msg.add_reaction(basic_emoji.get('Si'))
             return
         # 0 videos -> exit
@@ -631,6 +632,18 @@ async def clear(ctx):
 @commands.guild_only()
 async def skip(ctx):
     global vc
+    try:
+        vc.stop()
+    except:
+        msg = await ctx.send("Nothing is playing.")
+        await msg.add_reaction(basic_emoji.get('Si'))
+        
+@bot.command(name='stop', aliases=['stop', 'leave'], help="Stop playing and leave voice.")
+@commands.guild_only()
+async def stop(ctx):
+    global vc
+    global song_queue
+    song_queue = []
     try:
         vc.stop()
     except:
