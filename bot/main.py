@@ -405,6 +405,8 @@ async def translate(ctx, *args):
     else:
         result = translator.translate(arg, dest='en')
         
+    # Debug
+    print("Source lang: " + result.src + "\nDest lang: " + result.dest)
     # Send the translated text and info about origin and destination languages
     msg = 'Translated from `' + googletrans.LANGUAGES.get(result.src) + '` ' + emoji_locale.code_to_country(result.src) + ' to `' + googletrans.LANGUAGES.get(result.dest) + '` ' + emoji_locale.code_to_country(result.dest) + '.'
     await ctx.send(msg + '\n```' + result.text[:1950] + '```')
