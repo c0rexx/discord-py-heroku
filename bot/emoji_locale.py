@@ -157,6 +157,7 @@ KNOWN_CODES = {
     'yav': 'CM',
     'yo': 'NG',
     'zh': 'CN',
+    'zh-CN': 'CN',
     'zu': 'ZA'
 }
 
@@ -166,10 +167,10 @@ KNOWN_CODES = {
 # Returns empty string for invalid/unknown ISO 639-1 language codes
 def code_to_country(code: str = ''):
     if not code:
-        return ''
+        return ' '
     elif code in KNOWN_CODES:
         country = KNOWN_CODES.get(code)
         # Unicode: chr(ord('A') + 127397) = 🇦
         # 🇬 + 🇧 = 🇬🇧
         return chr(ord(country[0]) + 127397) + chr(ord(country[1]) + 127397)
-    return ''
+    return ' '
