@@ -165,12 +165,12 @@ KNOWN_CODES = {
 # Note: Some languages could return just two regional indicator letter emojis (if that combination doesn't create a flag emoji)
 #       Doesn't cover every ISO 639-1 code
 # Returns empty string for invalid/unknown ISO 639-1 language codes
-def code_to_country(code: str = ''):
+def code_to_country(code):
     if not code:
-        return ' '
+        return ''
     elif code in KNOWN_CODES:
         country = KNOWN_CODES.get(code)
         # Unicode: chr(ord('A') + 127397) = 🇦
         # 🇬 + 🇧 = 🇬🇧
         return chr(ord(country[0]) + 127397) + chr(ord(country[1]) + 127397)
-    return ' '
+    return ''
