@@ -157,7 +157,7 @@ KNOWN_CODES = {
     'yav': 'CM',
     'yo': 'NG',
     'zh': 'CN',
-    'zh-CN': 'CN',
+    'zh-cn': 'CN',
     'zu': 'ZA'
 }
 
