@@ -31,7 +31,8 @@ basic_emoji = {
     'forsenScoots' : '<:forsenScoots:736973346142552195>',
     'forsenT' : '<:forsenT:743128058545832048>',
     'docSpin' : '<a:docSpin:743133871889055774>',
-    'hackerCD' : '<a:hackerCD:744835324827402250>'
+    'hackerCD' : '<a:hackerCD:744835324827402250>',
+    'Clap' : '<a:Clap:746623599321808918>'
 }
 scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
@@ -352,7 +353,7 @@ def detect_text(url):
         image_bytes = io.BytesIO(response.content)
         image = vision.types.Image(content=image_bytes.read())
     except:
-        return "That's not an image? " + basic_emoji.get('Pepega') + '\n' + basic_emoji.get('forsenSmug')
+        return "That's not an image? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug')
     
     # Let VisionAI do its thing
     cloud_response = google_vision.text_detection(image=image)
@@ -369,7 +370,7 @@ def detect_text(url):
 async def read(ctx, url: str = ''):
     # Check whether user provided url or embedded image
     if not url and not ctx.message.attachments:
-        await ctx.send("Read what? " + basic_emoji.get('Pepega') + '\n' + basic_emoji.get('forsenSmug'))
+        await ctx.send("Read what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     # Get url to the image
@@ -389,7 +390,7 @@ translator = googletrans.Translator()
 async def translate(ctx, *args):
     # No text entered -> nothing to translate
     if not args:
-        await ctx.send("Translate what? " + basic_emoji.get('Pepega') + '\n' + basic_emoji.get('forsenSmug'))
+        await ctx.send("Translate what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     
@@ -409,9 +410,9 @@ async def translate(ctx, *args):
     lang_src = googletrans.LANGUAGES.get(result.src)
     lang_dst = googletrans.LANGUAGES.get(result.dest)
     if lang_src is None:
-        lang_src = 'None (' + basic_emoji.get('Pepega') + ')'
+        lang_src = 'None (' + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + ')'
     if lang_dst is None:
-        lang_dst = 'None (' + basic_emoji.get('Pepega') + ')'
+        lang_dst = 'None (' + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + ')'
     # Send the translated text and info about origin and destination languages
     msg = 'Translated from `' + lang_src + '` ' + emoji_locale.code_to_country(result.src) + ' to `' + lang_dst + '` ' + emoji_locale.code_to_country(result.dest) + '.'
     await ctx.send(msg + '\n```' + result.text[:1950] + '```')
@@ -497,7 +498,7 @@ BOT_ID = str(os.getenv('BOT_ID'))
 async def play(ctx, *args):
     # No arguments -> exit
     if not args:
-        await ctx.send("Play what? " + basic_emoji.get('Pepega') + '\n' + basic_emoji.get('forsenSmug'))
+        await ctx.send("Play what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     
