@@ -21,7 +21,7 @@ WEATHER_TOKEN = os.getenv('WEATHER_TOKEN')
 GOOGLE_CLOUD_CREDENTIALS = service_account.Credentials.from_service_account_info(json.loads(os.getenv('GOOGLE_CLIENT_SECRETS')))
 YOUTUBE_API_TOKEN = os.getenv('YOUTUBE_API_TOKEN')
 
-bot = commands.Bot(command_prefix='p.')
+bot = commands.Bot(command_prefix='p.', case_insensitive=True)
 
 basic_emoji = {
     'Si' : '<:Si:523966164704034837>',
@@ -406,7 +406,12 @@ async def translate(ctx, *args):
         result = translator.translate(arg, dest='en')
         
     # Debug
-    print("Source lang: " + result.src + "\nDest lang: " + result.dest)
+    print("Src lang: " + result.src)
+    print("Dst lang: " + result.dest)
+    print("Lang  src: " + googletrans.LANGUAGES.get(result.src))
+    print("Emoji src: " + emoji_locale.code_to_country(result.src))
+    print("Lang  dst: " + googletrans.LANGUAGES.get(result.dest))
+    print("Emoji dst: " + emoji_locale.code_to_country(result.dest))
     # Send the translated text and info about origin and destination languages
     msg = 'Translated from `' + googletrans.LANGUAGES.get(result.src) + '` ' + emoji_locale.code_to_country(result.src) + ' to `' + googletrans.LANGUAGES.get(result.dest) + '` ' + emoji_locale.code_to_country(result.dest) + '.'
     await ctx.send(msg + '\n```' + result.text[:1950] + '```')
