@@ -406,7 +406,7 @@ async def translate(ctx, *args):
     else:
         result = translator.translate(arg, dest='en')
         
-    # Using .lower() because for example chinese-traditional is 'zh-cn', but result.src would return 'zh-CN' (so dumb)
+    # Using .lower() because for example chinese-simplified is 'zh-cn', but result.src would return 'zh-CN' (so dumb)
     msg = 'Translated from `' + googletrans.LANGUAGES.get(result.src.lower()) + '` ' + emoji_locale.code_to_country(result.src.lower()) + ' to `' + lang_dst = googletrans.LANGUAGES.get(result.dest.lower()) + '` ' + emoji_locale.code_to_country(result.dest.lower()) + '.'
     await ctx.send(msg + '\n```' + result.text[:1950] + '```')
 
