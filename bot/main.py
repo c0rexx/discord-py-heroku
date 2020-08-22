@@ -405,13 +405,13 @@ async def translate(ctx, *args):
     else:
         result = translator.translate(arg, dest='en')
         
-    # Debug
-    print("Src lang: " + result.src)
-    print("Dst lang: " + result.dest)
-    print("Lang  src: " + googletrans.LANGUAGES.get(result.src))
-    print("Emoji src: " + emoji_locale.code_to_country(result.src))
-    print("Lang  dst: " + googletrans.LANGUAGES.get(result.dest))
-    print("Emoji dst: " + emoji_locale.code_to_country(result.dest))
+    # Chinese traditional (and possibly more languages) text does get recognized and translated, but isn't in googletrans.LANGUAGES (zh-CN), so this is a workaround
+    lang_src = googletrans.LANGUAGES.get(result.src)
+    lang_dst = googletrans.LANGUAGES.get(result.dest)
+    if lang_src is None:
+        lang_src = ''
+    if lang_dst is None:
+        lang_dst = ''
     # Send the translated text and info about origin and destination languages
     msg = 'Translated from `' + googletrans.LANGUAGES.get(result.src) + '` ' + emoji_locale.code_to_country(result.src) + ' to `' + googletrans.LANGUAGES.get(result.dest) + '` ' + emoji_locale.code_to_country(result.dest) + '.'
     await ctx.send(msg + '\n```' + result.text[:1950] + '```')
