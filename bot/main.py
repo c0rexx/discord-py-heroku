@@ -32,7 +32,7 @@ basic_emoji = {
     'forsenT' : '<:forsenT:743128058545832048>',
     'docSpin' : '<a:docSpin:743133871889055774>',
     'hackerCD' : '<a:hackerCD:744835324827402250>',
-    'Clap' : '<a:Clap:746623599321808918>'
+    'Clap' : '<a:Clap:746628991753912401>'
 }
 scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
@@ -412,13 +412,13 @@ async def translate(ctx, *args):
     lang_dst = googletrans.LANGUAGES.get(result.dest)
     # Source language
     if lang_src is None:
-        msg += '`None` (' + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + ')'
+        msg += '`None` (' + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + ') '
     else:
         msg += '`' + lang_src + '` '
     msg += emoji_locale.code_to_country(result.src) + ' to '
     # Destination language
     if lang_dst is None:
-        msg += '`None` (' + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + ')'
+        msg += '`None` (' + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + ') '
     else:
         msg += '`' + lang_dst + '` '
         
