@@ -405,24 +405,9 @@ async def translate(ctx, *args):
     # Otherwise translate to english by default
     else:
         result = translator.translate(arg, dest='en')
-    
-    msg = 'Translated from '
-    # Chinese traditional (and possibly more languages) text does get recognized and translated, but isn't in googletrans.LANGUAGES (zh-CN), so this is a workaround
-    lang_src = googletrans.LANGUAGES.get(result.src)
-    lang_dst = googletrans.LANGUAGES.get(result.dest)
-    # Source language
-    if lang_src is None:
-        msg += '`None` (' + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + ') '
-    else:
-        msg += '`' + lang_src + '` '
-    msg += emoji_locale.code_to_country(result.src) + ' to '
-    # Destination language
-    if lang_dst is None:
-        msg += '`None` (' + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + ') '
-    else:
-        msg += '`' + lang_dst + '` '
         
-    msg += emoji_locale.code_to_country(result.dest) + '.'
+    # Using .lower() because for example chinese-traditional is 'zh-cn', but result.src would return 'zh-CN' (so dumb)
+    msg = 'Translated from `' + googletrans.LANGUAGES.get(result.src.lower()) + '` ' + emoji_locale.code_to_country(result.src.lower()) + ' to `' + lang_dst = googletrans.LANGUAGES.get(result.dest.lower()) + '` ' + emoji_locale.code_to_country(result.dest.lower()) + '.'
     await ctx.send(msg + '\n```' + result.text[:1950] + '```')
 
 # https://stackoverflow.com/questions/56060614/how-to-make-a-discord-bot-play-youtube-audio
