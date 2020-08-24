@@ -10,6 +10,7 @@ import wikipedia
 import youtube_dl
 import googletrans
 import emoji_locale
+from textwrap import wrap
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from google.cloud import vision
@@ -361,9 +362,8 @@ def detect_text(url):
     # Couldn't read anything
     if not texts:
         return "Can't see shit! " + basic_emoji.get('forsenT')
-    # Else format text (max. 2000 characters)
     else:
-        return '```' + texts[0].description[:1994] + '```'
+        return texts[0].description
 
 @bot.command(name='read', help='Read image.')
 @commands.guild_only()
@@ -382,7 +382,9 @@ async def read(ctx, url: str = ''):
     # Attempt to detect text
     text = detect_text(url)
     await status.delete()
-    await ctx.send(text)
+    # Split into short enough segments (Discord's max message length is 2000)
+    for s in wrap(text, 1990)
+        await ctx.send('```' + text + '```')
     
 translator = googletrans.Translator()
 @bot.command(name='translate', help="Translate text.")
