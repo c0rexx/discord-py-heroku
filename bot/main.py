@@ -383,8 +383,8 @@ async def read(ctx, url: str = ''):
     text = detect_text(url)
     await status.delete()
     # Split into short enough segments (Discord's max message length is 2000)
-    for s in wrap(text, 1990)
-        await ctx.send('```' + text + '```')
+    for s in wrap(text, 1990):
+        await ctx.send('```' + s + '```')
     
 translator = googletrans.Translator()
 @bot.command(name='translate', help="Translate text.")
