@@ -605,6 +605,7 @@ async def play(ctx, *args):
         if not vc.is_connected():
             vc = None
             queue = []
+            return
             
         vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
         title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: `' + player.title + '` ' + random.choice(dance_emoji))
@@ -617,6 +618,7 @@ async def play(ctx, *args):
         if not vc.is_connected():
             vc = None
             queue = []
+            return
             
     # Leave voice after last song
     await vc.disconnect()
