@@ -600,12 +600,25 @@ async def play(ctx, *args):
             continue
 
         await status.delete()
+        
+        # Bot kicked from vc while downloading -> return to "empty" state (no vc, nothing queued)
+        if not vc.is_connected():
+            vc = None
+            queue = []
+            
         vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
         title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: `' + player.title + '` ' + random.choice(dance_emoji))
         await title.add_reaction(random.choice(dance_react))
 
-        while vc.is_playing():
+        while vc.is_playing() and vc.is_connected():
             await asyncio.sleep(1)
+
+        # Bot kicked from vc while playing
+        if not vc.is_connected():
+            vc = None
+            queue = []
+            
+    # Leave voice after last song
     await vc.disconnect()
     vc = None
     
