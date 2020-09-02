@@ -693,6 +693,6 @@ async def ping(ctx):
     ms = (pong.created_at - ctx.message.created_at).total_seconds() * 1000
     msAlt = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
     msAlt2 = (pong.created_at - datetime.datetime.utcnow()).total_seconds() * 1000
-    await pong.edit(content=basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms` `{0}ms` `{0}ms`'.format(int(ms), int(msAlt), int(msAlt2)))
+    await pong.edit(content=basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms` `{1}ms` `{2}ms`'.format(int(ms), int(msAlt), int(msAlt2)))
         
 bot.run(DISCORD_TOKEN)
