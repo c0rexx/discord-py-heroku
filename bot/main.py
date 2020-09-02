@@ -684,11 +684,11 @@ async def playing(ctx):
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
     else:
-        title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: ' + song
+        title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: ' + song)
         await title.add_reaction(random.choice(dance_react))
                                
 @bot.command(name='ping', help="Display bot's ping.")
 async def ping(ctx):
-    await ctx.send('Pong! `{0}ms`'.format(round(bot.latency, 3)))
+    await ctx.send(basic_emoji.get('Pepega') + '🏓 Pong! `{0}ms`'.format(round(bot.latency, 3)))
         
 bot.run(DISCORD_TOKEN)
