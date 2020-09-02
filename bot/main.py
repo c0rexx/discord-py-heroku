@@ -466,6 +466,7 @@ import ctypes.util
 discord.opus.load_opus(ctypes.util.find_library('opus'))    
 vc = None
 song_queue = []
+song = ""
 
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_TOKEN)
 def youtube_search(title):
@@ -586,6 +587,7 @@ async def play(ctx, *args):
         await ctx.send('Song added to queue.')
         return
     
+    global song
     while song_queue:
         song = song_queue.pop(0)
         player = None
@@ -618,11 +620,13 @@ async def play(ctx, *args):
         if not vc.is_connected():
             vc = None
             queue = []
+            song = ""
             return
             
     # Leave voice after last song
     await vc.disconnect()
     vc = None
+    song = ""
     
 @bot.command(name='queue', help="Display songs in queue.")
 @commands.guild_only()
@@ -631,7 +635,7 @@ async def queue(ctx):
     if not song_queue:
         await ctx.send('Queue is empty.')
         return
-    msg = ''
+    msg = ""
     for song in song_queue:
         msg += song + '\n'
     await ctx.send('🎶 Queue 🎶: ' + msg[:1980])
@@ -650,8 +654,10 @@ async def clear(ctx):
 @commands.guild_only()
 async def skip(ctx):
     global vc
+    global song
     try:
         vc.stop()
+        song = ""
     except:
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
@@ -661,11 +667,28 @@ async def skip(ctx):
 async def stop(ctx):
     global vc
     global song_queue
+    global song
     song_queue = []
+    song = ""
     try:
         vc.stop()
     except:
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
     
+@bot.command(name='playing', aliases=['song'], help="Display currently playing song.")
+@commands.guild_only()
+async def playing(ctx):
+    global song
+    if not song:
+        msg = await ctx.send("Nothing is playing.")
+        await msg.add_reaction(basic_emoji.get('Si'))
+    else:
+        title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: ' + song
+        await title.add_reaction(random.choice(dance_react))
+                               
+@bot.command(name='ping', help="Display bot's ping.")
+async def ping(ctx):
+    await ctx.send('Pong! `{0}ms`'.format(round(bot.latency, 3)))
+        
 bot.run(DISCORD_TOKEN)
