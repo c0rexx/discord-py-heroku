@@ -690,7 +690,8 @@ async def playing(ctx):
 @bot.command(name='ping', help="Display bot's ping.")
 async def ping(ctx):
     pong = await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong!')
-    ms = (pong.created_at-ctx.message.created_at).total_seconds() * 1000
-    await pong.edit(content=basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
+    ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
+    msAlt = (pong.created_at - datetime.datetime.utcnow()).total_seconds() * 1000
+    await pong.edit(content=basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms` `{0}ms`'.format(int(ms), int(msAlt)))
         
 bot.run(DISCORD_TOKEN)
