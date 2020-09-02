@@ -689,6 +689,6 @@ async def playing(ctx):
                                
 @bot.command(name='ping', help="Display bot's ping.")
 async def ping(ctx):
-    await ctx.send(basic_emoji.get('Pepega') + '🏓 Pong! `{0}ms`'.format(round(bot.latency, 3)))
+    await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(round(bot.latency * 1000, 4)))
         
 bot.run(DISCORD_TOKEN)
