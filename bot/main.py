@@ -34,7 +34,9 @@ basic_emoji = {
     'docSpin' : '<a:docSpin:743133871889055774>',
     'hackerCD' : '<a:hackerCD:744835324827402250>',
     'Clap' : '<a:Clap:746628991753912401>',
-    'FeelsWeirdMan' : '<:FeelsWeirdMan:750942213676073012>'
+    'FeelsWeirdMan' : '<:FeelsWeirdMan:750942213676073012>',
+    'Okayga' : '<:Okayga:750974019104276521>',
+    'residentCD' : '<:residentCD:750974439092518922>'
 }
 scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
@@ -523,6 +525,7 @@ async def play(ctx, *args):
     # Resume if paused and no song requested
     if not args and vc.is_paused():
         vc.resume()
+        await ctx.send('Resumed playing ' + random.choice(dance_emoji))
         return
     
     # Extract youtube video url
@@ -685,6 +688,7 @@ async def play(ctx, *args):
     global vc
     try:
         vc.pause()
+        await ctx.send(basic_emoji.get('residentCD') + 'Paused ' + basic_emoji.get('Okayga'))
     except:
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
