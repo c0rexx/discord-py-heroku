@@ -509,6 +509,14 @@ async def play(ctx, *args):
         await msg.add_reaction(basic_emoji.get('Si'))
         return
     
+    if not channel.permissions_for(bot).connect:
+        await ctx.send("I don't have permission to join that channel " + basic_emoji.get('Pepega'))
+        return
+        
+    if not channel.permissions_for(bot).speak:
+        await ctx.send("I don't have permission to speak in that channel " + basic_emoji.get('Pepega'))
+        return
+    
     # Extract youtube video url
     arg = ' '.join(str(i) for i in args)
     url = ''
@@ -581,10 +589,6 @@ async def play(ctx, *args):
         vc = await channel.connect()
     else:
         await vc.move_to(channel)
-        
-    if vc is None or not vc.is_connected():
-        await ctx.send("I don't have permission to join that channel " + basic_emoji.get('Pepega'))
-        return
         
     global song_queue
     song_queue.append(url)
