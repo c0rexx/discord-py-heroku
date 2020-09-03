@@ -33,7 +33,8 @@ basic_emoji = {
     'forsenT' : '<:forsenT:743128058545832048>',
     'docSpin' : '<a:docSpin:743133871889055774>',
     'hackerCD' : '<a:hackerCD:744835324827402250>',
-    'Clap' : '<a:Clap:746628991753912401>'
+    'Clap' : '<a:Clap:746628991753912401>',
+    'FeelsWeirdMan' : '<:FeelsWeirdMan:750942213676073012>'
 }
 scoots_emoji = [
     '<:forsenScoots:736973346142552195>',
@@ -577,7 +578,11 @@ async def play(ctx, *args):
         
     global vc
     if vc is None:
-        vc = await channel.connect()
+        try:
+            vc = await channel.connect()
+        except:
+            # Debug
+            ctx.send('Exception while connecting to vc.')
     else:
         await vc.move_to(channel)
         
@@ -615,13 +620,13 @@ async def play(ctx, *args):
 
         while vc.is_playing() and vc.is_connected():
             await asyncio.sleep(1)
-
-        # Bot kicked from vc while playing
-        if not vc.is_connected():
-            vc = None
-            queue = []
-            song = ""
-            return
+            # If bot kicked from vc while playing
+            if not vc.is_connected():
+                vc = None
+                queue = []
+                song = ""
+                await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
+                return
             
     # Leave voice after last song
     await vc.disconnect()
