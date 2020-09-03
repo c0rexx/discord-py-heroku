@@ -509,11 +509,11 @@ async def play(ctx, *args):
         await msg.add_reaction(basic_emoji.get('Si'))
         return
     
-    if not channel.permissions_for(bot.get_user(BOT_ID)).connect:
+    if not channel.permissions_for(ctx.guild.get_member(bot.user.id)).connect:
         await ctx.send("I don't have permission to join that channel " + basic_emoji.get('Pepega'))
         return
         
-    if not channel.permissions_for(bot.get_user(BOT_ID)).speak:
+    if not channel.permissions_for(guild.get_member(bot.user.id)).speak:
         await ctx.send("I don't have permission to speak in that channel " + basic_emoji.get('Pepega'))
         return
     
