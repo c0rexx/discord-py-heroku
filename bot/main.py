@@ -513,7 +513,7 @@ async def play(ctx, *args):
         await ctx.send("I don't have permission to join that channel " + basic_emoji.get('Pepega'))
         return
         
-    if not channel.permissions_for(guild.get_member(bot.user.id)).speak:
+    if not channel.permissions_for(ctx.guild.get_member(bot.user.id)).speak:
         await ctx.send("I don't have permission to speak in that channel " + basic_emoji.get('Pepega'))
         return
     
