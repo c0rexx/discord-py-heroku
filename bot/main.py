@@ -494,7 +494,7 @@ BOT_ID = str(os.getenv('BOT_ID'))
 # That's fine since this bot is a 'private' one, only made for one server
 
 # Play a requested song or resume paused queue
-@bot.command(name='play', aliases=['resume'], help="Join VC and play music.")
+@bot.command(name='play', aliases=['resume', 'unpause'], help="Join VC and play music.")
 @commands.guild_only()
 async def play(ctx, *args):
     global vc
