@@ -490,11 +490,14 @@ BOT_ID = str(os.getenv('BOT_ID'))
 
 # This works properly only on one server at a time
 # That's fine since this bot is a 'private' one, only made for one server
-@bot.command(name='play', help="Join VC and play music.")
+
+# Play a requested song or resume paused queue
+@bot.command(name='play', aliases=['resume'], help="Join VC and play music.")
 @commands.guild_only()
 async def play(ctx, *args):
+    global vc
     # No arguments -> exit
-    if not args:
+    if not args and (vc is None or not vc.is_paused()):
         await ctx.send("Play what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
@@ -515,6 +518,11 @@ async def play(ctx, *args):
         
     if not channel.permissions_for(ctx.guild.get_member(bot.user.id)).speak:
         await ctx.send("I don't have permission to speak in that channel " + basic_emoji.get('Pepega'))
+        return
+    
+    # Resume if paused and no song requested
+    if not args and vc.is_paused():
+        vc.resume()
         return
     
     # Extract youtube video url
@@ -584,7 +592,6 @@ async def play(ctx, *args):
             # Delete poll
             await msg.delete()
         
-    global vc
     if vc is None:
         vc = await channel.connect()
     else:
@@ -622,15 +629,16 @@ async def play(ctx, *args):
         title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: `' + player.title + '` ' + random.choice(dance_emoji))
         await title.add_reaction(random.choice(dance_react))
 
-        while vc.is_playing() and vc.is_connected():
-            await asyncio.sleep(1)
-            # If bot kicked from vc while playing
-            if not vc.is_connected():
-                vc = None
-                queue = []
-                song = ""
-                await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
-                return
+        while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
+            await asyncio.sleep(1)      
+    
+    # Bot kicked from vc while playing
+    if not vc.is_connected():
+        vc = None
+        queue = []
+        song = ""
+        await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
+        return
             
     # Leave voice after last song
     await vc.disconnect()
@@ -667,6 +675,16 @@ async def skip(ctx):
     try:
         vc.stop()
         song = ""
+    except:
+        msg = await ctx.send("Nothing is playing.")
+        await msg.add_reaction(basic_emoji.get('Si'))
+        
+@bot.command(name='pause', help="Pause music.")
+@commands.guild_only()
+async def play(ctx, *args):
+    global vc
+    try:
+        vc.pause()
     except:
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
