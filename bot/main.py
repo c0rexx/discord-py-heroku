@@ -578,13 +578,13 @@ async def play(ctx, *args):
         
     global vc
     if vc is None:
-        try:
-            vc = await channel.connect()
-        except:
-            # Debug
-            ctx.send('Exception while connecting to vc.')
+        vc = await channel.connect()
     else:
         await vc.move_to(channel)
+        
+    if vc is None or not vc.is_connected():
+        await ctx.send("I don't have permission to join that channel " + basic_emoji.get('Pepega'))
+        return
         
     global song_queue
     song_queue.append(url)
