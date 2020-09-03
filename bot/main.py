@@ -688,7 +688,7 @@ async def play(ctx, *args):
     global vc
     try:
         vc.pause()
-        await ctx.send(basic_emoji.get('residentCD') + 'Paused ' + basic_emoji.get('Okayga'))
+        await ctx.send(basic_emoji.get('residentCD') + ' Paused ' + basic_emoji.get('Okayga'))
     except:
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
