@@ -623,9 +623,11 @@ async def play(ctx, *args):
         await status.delete()
         
         # Bot kicked from vc while downloading -> return to "empty" state (no vc, nothing queued)
-        if not vc.is_connected():
+        if vc is None or not vc.is_connected():
             vc = None
             queue = []
+            song = ""
+            await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
             return
             
         vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
