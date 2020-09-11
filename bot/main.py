@@ -453,6 +453,10 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.url = data.get('url')
 
     @classmethod
+    async def test():
+        return "testing"
+        
+    @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
@@ -645,7 +649,8 @@ async def play(ctx, *args):
             
         global repeat
         while repeat:
-            vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+            #vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+            await ctx.send(player.test)
             while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
                 await asyncio.sleep(1)
     
