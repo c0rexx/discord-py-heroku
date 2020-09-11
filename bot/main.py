@@ -474,7 +474,7 @@ discord.opus.load_opus(ctypes.util.find_library('opus'))
 vc = None
 song_queue = []
 song = ""
-repeat = False
+repeat_song = False
 
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_TOKEN)
 def youtube_search(title):
@@ -647,8 +647,8 @@ async def play(ctx, *args):
         while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
             await asyncio.sleep(1)
             
-        global repeat
-        while repeat:
+        global repeat_song
+        while repeat_song:
             #vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
             await ctx.send(player.test)
             while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
@@ -712,7 +712,7 @@ async def play(ctx, *args):
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
         
-@bot.command(name='repeat', aliases=['stop repeat'], help="Repeat current song.")
+@bot.command(name='repeat', aliases=['stop_repeat'], help="Repeat current song.")
 @commands.guild_only()
 async def repeat(ctx):
     global song
@@ -721,9 +721,9 @@ async def repeat(ctx):
         await msg.add_reaction(basic_emoji.get('Si'))
         return
     
-    global repeat
-    repeat = not repeat
-    await ctx.send("Repeat set to `{0}`".format(repeat))
+    global repeat_song
+    repeat_song = not repeat_song
+    await ctx.send("Repeat set to `{0}`".format(repeat_song))
         
 @bot.command(name='stop', aliases=['leave'], help="Stop playing and leave voice channel.")
 @commands.guild_only()
