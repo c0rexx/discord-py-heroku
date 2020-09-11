@@ -776,8 +776,31 @@ async def ping(ctx):
     
 @bot.command(name='deth', help="Find out when you will die.")
 async def deth(ctx):
+    # Set seed (consistent time everytime for each user)
     random.seed(ctx.message.author.id)
-    date = random_date(datetime.date(1978, 6, 19), datetime.date(2100, 1, 1))
-    await ctx.send(custom_strftime('%B {S}, %Y', date))
+    causes = [
+        "cardiovascular disease",
+        "cancer",
+        "dementia",
+        "diarrheal disease",
+        "tuberculosis",
+        "malnutrition",
+        "HIV/AIDS",
+        "malaria",
+        "smoking",
+        "suicide",
+        "homicide",
+        "natural disaster",
+        "road incident",
+        "drowning",
+        "fire",
+        "terrorism",
+        "death by animal"
+    ]
+    
+    date = random_date(datetime.date(2025,1,1), datetime.date(2100, 1, 1))
+    await ctx.send("You will die on {0}. Cause of deth: {1}.".format(custom_strftime('%B {S}, %Y', date), random.choice(causes)))
+    # Use system time again (stops predictability of other things that use randomness)
+    random.seed()
         
 bot.run(DISCORD_TOKEN)
