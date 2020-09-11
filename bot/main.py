@@ -619,6 +619,15 @@ async def play(ctx, *args):
     global song
     global repeat_song
     while song_queue:
+        # Bot kicked from channel
+        if not vc.is_connected():
+            vc = None
+            queue = []
+            song = ""
+            repeat_song = False
+            await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
+            return
+    
         song = song_queue.pop(0)
         player = None
         status = None
@@ -654,7 +663,7 @@ async def play(ctx, *args):
         while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
             await asyncio.sleep(1)
             
-        while repeat_song:
+        while repeat_song and vc.is_connected():
             vc.play(player.revive(), after=lambda e: print('Player error: %s' % e) if e else None)
             while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
                 await asyncio.sleep(1)
