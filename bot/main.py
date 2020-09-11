@@ -651,6 +651,7 @@ async def play(ctx, *args):
         while repeat_song:
             #vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
             await ctx.send(player.test())
+            vc.stop()
             while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
                 await asyncio.sleep(1)
     
