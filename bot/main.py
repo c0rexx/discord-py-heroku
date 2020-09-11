@@ -456,7 +456,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
     async def from_url(cls, url, *, loop=None, stream=False):
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
-
+        
         if 'entries' in data:
             # Take first item from a playlist
             data = data['entries'][0]
@@ -614,7 +614,11 @@ async def play(ctx, *args):
         # Attempt to download video
         try:
             status = await ctx.send('Downloading... ' + basic_emoji.get('docSpin'))
-            player = await YTDLSource.from_url(song, loop=bot.loop)
+            player = await asyncio.wait_for(YTDLSource.from_url(song, loop=bot.loop), timeout=5)
+        except asyncio.TimeoutError:
+            await status.delete()
+            await ctx.send('Download timed out (5 seconds) `' + song + '` skipped ' + basic_emoji.get('Si'))
+            continue
         except:
             await status.delete()
             await ctx.send('Failed downloading `' + song + '` ' + basic_emoji.get('Si'))
