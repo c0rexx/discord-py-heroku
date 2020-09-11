@@ -626,10 +626,10 @@ async def play(ctx, *args):
         try:
             status = await ctx.send('Downloading... ' + basic_emoji.get('docSpin'))
             # 30 sec timeout (stops 10 hour videos)
-            player = await asyncio.wait_for(YTDLSource.from_url(song, loop=bot.loop), timeout=30)
+            player = await asyncio.wait_for(YTDLSource.from_url(song, loop=bot.loop), timeout=120)
         except asyncio.TimeoutError:
             await status.delete()
-            await ctx.send('Download timed out (30 seconds), `' + song + '` skipped ' + basic_emoji.get('Si'))
+            await ctx.send('Download timed out (120 seconds), `' + song + '` skipped ' + basic_emoji.get('Si'))
             continue
         except:
             await status.delete()
