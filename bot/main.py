@@ -773,5 +773,11 @@ async def playing(ctx):
 async def ping(ctx):
     ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
     await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
+    
+@bot.command(name='deth', help="Find out when you will die.")
+async def deth(ctx):
+    random.seed(ctx.message.author.id)
+    date = random_date(datetime.date(1978, 6, 19), datetime.date(2100, 1, 1))
+    await ctx.send(custom_strftime('%B {S}, %Y', date))
         
 bot.run(DISCORD_TOKEN)
