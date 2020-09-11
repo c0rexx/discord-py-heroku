@@ -454,6 +454,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     @classmethod
     def revive(self):
+        data = self.data
         filename = data['url']
         return self(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
         
