@@ -643,6 +643,7 @@ async def play(ctx, *args):
             vc = None
             queue = []
             song = ""
+            repeat_song = False
             await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
             return
             
@@ -663,6 +664,7 @@ async def play(ctx, *args):
         vc = None
         queue = []
         song = ""
+        repeat_song = False
         await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
         return
             
