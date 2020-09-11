@@ -693,14 +693,16 @@ async def clear(ctx):
     song_queue = []
     await ctx.send('Queue emptied.')
     
-@bot.command(name='skip', help="Skip current song.")
+@bot.command(name='skip', aliases=['next'], help="Skip current song.")
 @commands.guild_only()
 async def skip(ctx):
     global vc
     global song
+    global repeat_song
     try:
         vc.stop()
         song = ""
+        repeat_song = False
     except:
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
@@ -735,8 +737,10 @@ async def stop(ctx):
     global vc
     global song_queue
     global song
+    global repeat_song
     song_queue = []
     song = ""
+    repeat_song = False
     try:
         vc.stop()
     except:
