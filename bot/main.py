@@ -718,7 +718,7 @@ async def play(ctx, *args):
         msg = await ctx.send("Nothing is playing.")
         await msg.add_reaction(basic_emoji.get('Si'))
         
-@bot.command(name='repeat', aliases=['stop_repeat'], help="Repeat current song.")
+@bot.command(name='repeat', aliases=['toggle_repeat', 'stop_repeat'], help="Repeat current song.")
 @commands.guild_only()
 async def repeat(ctx):
     global song
