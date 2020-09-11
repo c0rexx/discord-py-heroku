@@ -455,7 +455,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
     @classmethod
     def revive(self):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+        return self(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
         
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
@@ -613,6 +613,7 @@ async def play(ctx, *args):
         return
     
     global song
+    global repeat_song
     while song_queue:
         song = song_queue.pop(0)
         player = None
@@ -648,11 +649,8 @@ async def play(ctx, *args):
         while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
             await asyncio.sleep(1)
             
-        global repeat_song
         while repeat_song:
-            #vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-            await ctx.send(player.test())
-            vc.stop()
+            vc.play(player.revive(), after=lambda e: print('Player error: %s' % e) if e else None)
             while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
                 await asyncio.sleep(1)
     
