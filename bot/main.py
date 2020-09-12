@@ -782,7 +782,7 @@ async def deth(ctx, input: str = ""):
         input = "You"
     else:
         input = input.lower()
-        random.seed(abs(hash(str)))
+        random.seed(abs(hash(input)))
         input = input.capitalize()
         
     causes = [
