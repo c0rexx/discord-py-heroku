@@ -781,9 +781,7 @@ async def deth(ctx, input: str = ""):
         random.seed(ctx.message.author.id)
         input = "You"
     else:
-        input = input.lower()
-        random.seed(abs(hash(input)))
-        input = input.capitalize()
+        random.seed(abs(hash(input.lower())))
         
     causes = [
         "cardiovascular disease",
