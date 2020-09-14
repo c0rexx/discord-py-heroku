@@ -829,7 +829,7 @@ async def wolfram(ctx, *args):
             response = requests.get(url)
             response.raise_for_status()
         except:
-            fail = await channel.send("Bad response ({0})".format(response.status_code))
+            fail = await ctx.send("Bad response ({0})".format(response.status_code))
             await fail.add_reaction(basic_emoji.get('Si'))
             return
 
