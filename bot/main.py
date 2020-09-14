@@ -2,6 +2,7 @@ import os
 import io
 import json
 import random
+import urllib
 import asyncio
 import discord
 import datetime
@@ -807,5 +808,23 @@ async def deth(ctx, input: str = ""):
     await ctx.send("{0} will die on {1}. Cause of deth: {2}.".format(input, custom_strftime('%B {S}, %Y', date), random.choice(causes)))
     # Use system time again (stops predictability of other things that use randomness)
     random.seed()
+    
+WOLFRAM_APPID = os.getenv('WOLFRAM_APPID')
+@bot.command(name='wolfram', aliases=['wa', 'wolframalpha', 'wolfram_alpha'], help="Wolfram alpha query.")
+@commands.guild_only()
+async def wolfram(ctx, *args):
+    # No arguments -> exit
+    if not args:
+        await ctx.send("? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap'))
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
+        return
         
+    query = ' '.join(str(i) for i in args)
+    query = urllib.parse.quote_plus(query)
+    print('"' + query + '"')
+    url = "http://api.wolframalpha.com/v1/simple?appid={0}&i={1}&background=36393f&foreground=dcddde&timeout=30".format(WOLFRAM_APPID, query)
+    print('"' + url + '"')
+    img_data = requests.get(url).content
+    await ctx.send(file=discord.File(img_data, filename="wolframalpha"))
+    
 bot.run(DISCORD_TOKEN)
