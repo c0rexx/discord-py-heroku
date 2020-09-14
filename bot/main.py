@@ -815,7 +815,7 @@ WOLFRAM_APPID = os.getenv('WOLFRAM_APPID')
 async def wolfram(ctx, *args):
     # No arguments -> exit
     if not args:
-        await ctx.send("? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap'))
+        await ctx.send("What? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap'))
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
         
@@ -839,6 +839,29 @@ async def wolfram(ctx, *args):
         filename = "tmp" + str(hash(query))
         open(filename, "wb").write(response.content)
         await ctx.send(file=discord.File(filename, filename="wolframalpha.gif"))
-        os.remove(filename) 
+        os.remove(filename)
+        
+@bot.command(name='decide', aliases=['choose'], help="Decide between options.")
+async def decide(ctx, *args):
+    # No arguments -> exit
+    if not args:
+        await ctx.send("Decide between what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + "\nUse `;`, `:`, `,` or ` or `, to separate options.")
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
+        return
+
+    raw = ' '.join(str(i) for i in args)
+    
+    options = raw.split(';')
+    if not options:
+        options = raw.split(':')
+        if not options:
+            options = raw.split(',')
+            if not options:
+                options = raw.split(' or ')
+            
+    if not options:
+        await ctx.send("Separator not recognized, use `;`, `:`, `,` or ` or `, to separate options.")
+    else:
+        await ctx.send(random.choice(options))
     
 bot.run(DISCORD_TOKEN)
