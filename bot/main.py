@@ -819,8 +819,7 @@ async def wolfram(ctx, *args):
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
         
-    query = ' '.join(str(i) for i in args)
-    query = urllib.parse.quote_plus(query)
+    query = urllib.parse.quote_plus(' '.join(str(i) for i in args))
     print('"' + query + '"')
     url = "http://api.wolframalpha.com/v1/simple?appid={0}&i={1}&background=36393f&foreground=dcddde&timeout=30".format(WOLFRAM_APPID, query)
     
@@ -838,7 +837,7 @@ async def wolfram(ctx, *args):
         return
     
     open("tmp", "wb").write(response.content)
-    await ctx.send(file=discord.File("tmp", filename="wolframalpha"))
+    await ctx.send(file=discord.File("tmp", filename="wolframalpha.gif"))
     os.remove("tmp") 
     
 bot.run(DISCORD_TOKEN)
