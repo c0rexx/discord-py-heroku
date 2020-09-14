@@ -822,7 +822,6 @@ async def wolfram(ctx, *args):
     # Parse query into url-friendly format (for example replaces spaces with '%2')
     query = urllib.parse.quote_plus(' '.join(str(i) for i in args))
     url = "http://api.wolframalpha.com/v1/simple?appid={0}&i={1}&background=36393e&foreground=white&timeout=30".format(WOLFRAM_APPID, query)
-    print('"' + url + '"')
     
     async with ctx.typing():
         response = None
