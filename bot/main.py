@@ -852,14 +852,14 @@ async def decide(ctx, *args):
     raw = ' '.join(str(i) for i in args)
     
     options = raw.split(';')
-    if not options:
+    if len(options) < 2:
         options = raw.split(':')
-        if not options:
+        if len(options) < 2:
             options = raw.split(',')
-            if not options:
+            if len(options) < 2:
                 options = raw.split(' or ')
             
-    if not options:
+    if len(options) < 2:
         await ctx.send("Separator not recognized, use `;`, `:`, `,` or ` or `, to separate options.")
     else:
         await ctx.send(random.choice(options))
