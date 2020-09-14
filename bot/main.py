@@ -823,10 +823,22 @@ async def wolfram(ctx, *args):
     query = urllib.parse.quote_plus(query)
     print('"' + query + '"')
     url = "http://api.wolframalpha.com/v1/simple?appid={0}&i={1}&background=36393f&foreground=dcddde&timeout=30".format(WOLFRAM_APPID, query)
+    
     # just a test of demo
     url = "http://api.wolframalpha.com/v1/simple?appid=DEMO&i=What+airplanes+are+flying+overhead%3F"
     print('"' + url + '"')
-    img_data = requests.get(url).content
-    await ctx.send(file=discord.File(img_data, filename="wolframalpha"))
+    
+    response = None
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except:
+        fail = await channel.send("Bad response ({0})".format(response.status_code))
+        await fail.add_reaction(basic_emoji.get('Si'))
+        return
+    
+    open("tmp", "wb").write(response.content)
+    await ctx.send(file=discord.File("tmp", filename="wolframalpha"))
+    os.remove("tmp") 
     
 bot.run(DISCORD_TOKEN)
