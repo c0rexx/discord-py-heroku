@@ -803,13 +803,17 @@ async def ping(ctx):
     await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
     
 @bot.command(name='deth', aliases=['death'], help="Find out when you or someone else will die.")
-async def deth(ctx, user: discord.User=None):
+async def deth(ctx, user):
     # Set seed (consistent time everytime for each user)
     if not user:
         random.seed(ctx.message.author.id)
-        input = "You"
-    else:
+        name = "You"
+    else if user is discord.User:
         random.seed(user.id)
+        name = user.name
+    else:
+        random.seed(abs(hash(user.lower())))
+        name = user
         
     causes = [
         "cardiovascular disease",
@@ -832,7 +836,7 @@ async def deth(ctx, user: discord.User=None):
     ]
     
     date = random_date(datetime.date(2025,1,1), datetime.date(2100, 1, 1))
-    await ctx.send("{0} will die on {1}. Cause of deth: {2}.".format(user, custom_strftime('%B {S}, %Y', date), random.choice(causes)))
+    await ctx.send("{0} will die on {1}. Cause of deth: {2}.".format(name, custom_strftime('%B {S}, %Y', date), random.choice(causes)))
     # Use system time again (stops predictability of other things that use randomness)
     random.seed()
     
