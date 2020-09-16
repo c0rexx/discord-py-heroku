@@ -800,8 +800,12 @@ async def playing(ctx):
                                
 @bot.command(name='ping', help="Display bot's ping.")
 async def ping(ctx):
-    ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
-    await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
+    #ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
+    #await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
+    recieved = datetime.datetime.utcnow()
+    msg = await ctx.send(basic_emoji.get('Pepega') + " 🏓 Pong!")
+    ping = (recieved - datetime.datetime.utcnow()).total_seconds() * 1000
+    await msg.edit(content=basic_emoji.get('Pepega') + " 🏓 Pong! `{0}ms`".format(int(ping)))
     
 @bot.command(name='deth', aliases=['death'], help="Find out when you or someone else will die.")
 async def deth(ctx, user: Union[discord.User, str, None]):
