@@ -11,7 +11,7 @@ import wikipedia
 import youtube_dl
 import googletrans
 import emoji_locale
-from typing import Union
+from typing import Optional
 from textwrap import wrap
 from bs4 import BeautifulSoup
 from discord.ext import commands
@@ -804,7 +804,7 @@ async def ping(ctx):
     await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
     
 @bot.command(name='deth', aliases=['death'], help="Find out when you or someone else will die.")
-async def deth(ctx, user: Optional[str, discord.User]):
+async def deth(ctx, user: Optional[discord.User, str]):
     # Set seed (consistent time everytime for each user)
     if not user:
         random.seed(ctx.message.author.id)
