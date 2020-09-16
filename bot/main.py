@@ -555,15 +555,15 @@ async def youtubeURLextractor(ctx, arg):
                 reaction, user = await bot.wait_for('reaction_add', timeout=120, check=check)               
             except asyncio.TimeoutError:
                 await ctx.send('No option chosen (timed out) ' + basic_emoji.get('Si'))
+                await msg.delete()
                 return ""
             # Create chosen URL
             else:
                 if str(reaction.emoji) == '❌':
                     await msg.delete()
                     return ""
+                await msg.delete()
                 return 'https://www.youtube.com/watch?v=' + videos[valid_numbers.index(str(reaction.emoji))][1]
-            # Delete poll
-            await msg.delete()
 
 # Play a requested song or resume paused queue
 # This works properly only on one server at a time
@@ -645,7 +645,7 @@ async def play(ctx, *args):
             continue
         except:
             await status.delete()
-            await ctx.send('Download failed (possibly age-restricted video), `' + song + '` skipped' + basic_emoji.get('Si'))
+            await ctx.send('Download failed (possibly age-restricted video), `' + song + '` skipped ' + basic_emoji.get('Si'))
             continue
 
         await status.delete()
@@ -696,7 +696,7 @@ async def forceplay(ctx, *args):
     
     global vc
     if vc is None:
-        await ctx.send("Nothing is playing " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + "\nUse `p.play`")
+        await ctx.send("Nothing is queued to skip in front of " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + "\nUse `p.play`")
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     
