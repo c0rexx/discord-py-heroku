@@ -802,18 +802,16 @@ async def ping(ctx):
     ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
     await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
     
+from typing import Union
 @bot.command(name='deth', aliases=['death'], help="Find out when you or someone else will die.")
-async def deth(ctx, user = None):
-    # Debug
-    print(type(user))
-    
+async def deth(ctx, user: Union[str, discord.User]):
     # Set seed (consistent time everytime for each user)
     if not user:
         random.seed(ctx.message.author.id)
         name = "You"
-    elif type(user) == discord.User:
+    elif isinstance(user, discord.User):
         random.seed(user.id)
-        name = user.name
+        name = user.display_name
     else:
         random.seed(abs(hash(user.lower())))
         name = user
