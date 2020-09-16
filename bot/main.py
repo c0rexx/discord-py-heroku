@@ -420,12 +420,18 @@ async def translate(ctx, *args):
 # https://stackoverflow.com/questions/56060614/how-to-make-a-discord-bot-play-youtube-audio
 youtube_dl.utils.bug_reports_message = lambda: ''
 
+# youtube-dl wants cookies as a text file
 with open("cookies.txt", "w") as text_file:
     print(os.getenv('COOKIE_DATA'), file=text_file)
     
+# Log-in to be able to download age-restricted videos
+YT_MAIL = os.getenv('YT_MAIL')
+YT_PASS = os.getenv('YT_PASS')
 ytdl_format_options = {
     'cookies': 'cookies.txt',
     'user_agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0',
+    'username': YT_MAIL,
+    'password': YT_PASS,
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
@@ -800,12 +806,8 @@ async def playing(ctx):
                                
 @bot.command(name='ping', help="Display bot's ping.")
 async def ping(ctx):
-    #ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
-    #await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
-    recieved = datetime.datetime.utcnow()
-    msg = await ctx.send(basic_emoji.get('Pepega') + " 🏓 Pong!")
-    ping = (recieved - datetime.datetime.utcnow()).total_seconds() * 1000
-    await msg.edit(content=basic_emoji.get('Pepega') + " 🏓 Pong! `{0}ms`".format(int(ping)))
+    ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
+    await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
     
 @bot.command(name='deth', aliases=['death'], help="Find out when you or someone else will die.")
 async def deth(ctx, user: Union[discord.User, str, None]):
