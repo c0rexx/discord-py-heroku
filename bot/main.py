@@ -501,10 +501,73 @@ def youtube_search(title):
 
 BOT_ID = str(os.getenv('BOT_ID'))
 
-# This works properly only on one server at a time
-# That's fine since this bot is a 'private' one, only made for one server
+async def youtubeURLextractor(ctx, arg):
+    # URL contained in argument
+    if 'youtube.com/watch?v=' in arg or 'youtu.be/' in arg:
+        # Assuming it's the first 'word' of argument
+        return arg.partition(' ')[0]
+    # Else search youtube for video title
+    else:
+        videos = []
+        try:
+            videos = youtube_search(arg)
+        except:
+            msg = await ctx.send(basic_emoji.get('hackerCD') + 'HTTP error. ' + basic_emoji.get('Sadge'))
+            await msg.add_reaction(basic_emoji.get('Si'))
+            return ""
+        # 0 videos -> exit
+        if len(videos) == 0:
+            msg = await ctx.send('0 videos found. ' + basic_emoji.get('Sadge'))
+            await msg.add_reaction(basic_emoji.get('Si'))
+            return ""
+        # 1 video -> we have a winner
+        elif len(videos) == 1:
+            return 'https://www.youtube.com/watch?v=' + videos[0][1]
+        # Else let user to choose which one they meant
+        else:
+            poll = ''
+            i = 0
+            # Only giving 5 choices max
+            number_emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣']
+            valid_numbers = []
+            # Iterate over all (5 at most) found videos, pair = ('title - channel' : 'video_id')
+            for pair in videos:
+                # Add title to message
+                poll += number_emojis[i] + '. ' + pair[0] + '\n'
+                # Add valid option
+                valid_numbers.append(number_emojis[i])
+                i += 1
+            # Display message with available videos
+            msg = await ctx.send(poll)            
+            
+            # Add options
+            for number in valid_numbers:
+                await msg.add_reaction(number)
+            await msg.add_reaction('❌')
+                
+            # Checks if added reaction is the one we're waiting for
+            def check(reaction, user):
+                return user == ctx.message.author and (str(reaction.emoji) in valid_numbers or str(reaction.emoji) == '❌')
+                       
+            reaction = None
+            try:
+                # Watch for reaction
+                reaction, user = await bot.wait_for('reaction_add', timeout=120, check=check)               
+            except asyncio.TimeoutError:
+                await ctx.send('No option chosen (timed out) ' + basic_emoji.get('Si'))
+                return ""
+            # Create chosen URL
+            else:
+                if str(reaction.emoji) == '❌':
+                    await msg.delete()
+                    return ""
+                return 'https://www.youtube.com/watch?v=' + videos[valid_numbers.index(str(reaction.emoji))][1]
+            # Delete poll
+            await msg.delete()
 
 # Play a requested song or resume paused queue
+# This works properly only on one server at a time
+# That's fine since this bot is a 'private' one, only made for one server
 @bot.command(name='play', aliases=['resume', 'unpause'], help="Join VC and play music.")
 @commands.guild_only()
 async def play(ctx, *args):
@@ -541,70 +604,9 @@ async def play(ctx, *args):
     
     # Extract youtube video url
     arg = ' '.join(str(i) for i in args)
-    url = ''
-    
-    # URL contained in argument
-    if 'youtube.com/watch?v=' in arg or 'youtu.be/' in arg:
-        # Assume it's the first 'word' of combined arguments
-        url = arg.partition(' ')[0]
-    # Else search youtube for video title
-    else:
-        videos = []
-        try:
-            videos = youtube_search(arg)
-        except:
-            msg = await ctx.send(basic_emoji.get('hackerCD') + 'HTTP error. ' + basic_emoji.get('Sadge'))
-            await msg.add_reaction(basic_emoji.get('Si'))
-            return
-        # 0 videos -> exit
-        if len(videos) == 0:
-            msg = await ctx.send('0 videos found. ' + basic_emoji.get('Sadge'))
-            await msg.add_reaction(basic_emoji.get('Si'))
-            return
-        # 1 video -> we have a winner
-        elif len(videos) == 1:
-            url = 'https://www.youtube.com/watch?v=' + videos[0][1]
-        # Else let user to choose which one they meant
-        else:
-            poll = ''
-            i = 0
-            # Only giving 5 choices max
-            number_emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣']
-            valid_numbers = []
-            # Iterate over all (5 at most) found videos, pair = ('title - channel' : 'video_id')
-            for pair in videos:
-                # Add title to message
-                poll += number_emojis[i] + '. ' + pair[0] + '\n'
-                # Add valid option
-                valid_numbers.append(number_emojis[i])
-                i += 1
-            # Display message with available videos
-            msg = await ctx.send(poll)            
-            
-            # Add options
-            for number in valid_numbers:
-                await msg.add_reaction(number)
-            await msg.add_reaction('❌')
-                
-            # Checks if added reaction is the one we're waiting for
-            def check(reaction, user):
-                return user == ctx.message.author and (str(reaction.emoji) in valid_numbers or str(reaction.emoji) == '❌')
-                       
-            reaction = None
-            try:
-                # Watch for reaction
-                reaction, user = await bot.wait_for('reaction_add', timeout=120, check=check)               
-            except asyncio.TimeoutError:
-                await ctx.send('No option chosen (timed out) ' + basic_emoji.get('Si'))
-                return
-            # Create chosen URL
-            else:
-                if str(reaction.emoji) == '❌':
-                    await msg.delete()
-                    return
-                url = 'https://www.youtube.com/watch?v=' + videos[valid_numbers.index(str(reaction.emoji))][1]
-            # Delete poll
-            await msg.delete()
+    url = await youtubeURLextractor(ctx, arg)
+    if not url:
+        return
         
     if vc is None:
         vc = await channel.connect()
@@ -682,6 +684,31 @@ async def play(ctx, *args):
     await vc.disconnect()
     vc = None
     song = ""
+    
+@bot.command(name='forceplay', aliases=['priorityplay'], help="Add song to the front of the queue.")
+@commands.guild_only()
+async def forceplay(ctx, *args):
+    # No arguments -> exit
+    if not args:
+        await ctx.send("Play what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
+        return
+    
+    global vc
+    if vc is None:
+        await ctx.send("Nothing is playing " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + "\nUse `p.play`")
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
+        return
+    
+    # Extract youtube video url
+    arg = ' '.join(str(i) for i in args)
+    url = await youtubeURLextractor(ctx, arg)
+    if not url:
+        return
+    
+    global song_queue
+    song_queue.insert(0, url)
+    await ctx.send('Song inserted to the front of the queue.')
     
 @bot.command(name='queue', help="Display songs in queue.")
 @commands.guild_only()
