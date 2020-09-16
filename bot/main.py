@@ -804,11 +804,14 @@ async def ping(ctx):
     
 @bot.command(name='deth', aliases=['death'], help="Find out when you or someone else will die.")
 async def deth(ctx, user = None):
+    # Debug
+    print(type(user))
+    
     # Set seed (consistent time everytime for each user)
     if not user:
         random.seed(ctx.message.author.id)
         name = "You"
-    elif isinstance(user, discord.User):
+    elif type(user) == discord.User:
         random.seed(user.id)
         name = user.name
     else:
