@@ -803,7 +803,7 @@ async def ping(ctx):
     await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
     
 @bot.command(name='deth', aliases=['death'], help="Find out when you or someone else will die.")
-async def deth(ctx, user):
+async def deth(ctx, user = None):
     # Set seed (consistent time everytime for each user)
     if not user:
         random.seed(ctx.message.author.id)
