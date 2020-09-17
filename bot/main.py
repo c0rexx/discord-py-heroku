@@ -93,10 +93,16 @@ async def wait_until_release():
         await garf_comic(bot.guilds[0].text_channels[0], datetime.datetime.utcnow())
         await asyncio.sleep(86400)
 
+async def leave_voice():
+    for guild in bot.guilds:
+        if guild.voice_client and guild.voice_client.is_connected():
+            await guild.voice_client.disconnect()
+        
 @bot.event
 async def on_ready():
     bot.loop.create_task(status_changer())
     bot.loop.create_task(wait_until_release())
+    bot.loop.create_task(leave_voice())
 
 @bot.event
 async def on_command_error(ctx, error):
