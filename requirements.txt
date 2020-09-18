@@ -34,3 +34,4 @@ google-cloud==0.34.0
 google-cloud-vision==1.0.0
 googleapis-common-protos==1.52.0
 youtube_dl==2020.7.28
+BASC-py4chan==0.6.5 
