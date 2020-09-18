@@ -423,8 +423,8 @@ async def translate(ctx, *args):
         
     # Using .lower() because for example chinese-simplified is 'zh-cn', but result.src would return 'zh-CN' (so dumb)
     msg = "Translated from `{0}` {1} to `{2}` {3}".format(googletrans.LANGUAGES.get(result.src.lower()), emoji_locale.code_to_country(result.src.lower()), googletrans.LANGUAGES.get(result.dest.lower()), emoji_locale.code_to_country(result.dest.lower()))
-    # Use a raw string (to escape quotes)
-    await ctx.send(r"{0}\n```{1}```".format(msg, result.text[:1950]))
+    # Remove any quotes from translated text (I couldn't figure out how to just escape them so discord wouldn't throw exceptions over un-quoted string or some shit)
+    await ctx.send("{0}\n```{1}```".format(msg, result.text[:1950].replace('"', '').replace('’', '').replace("'", '')))
 
 # https://stackoverflow.com/questions/56060614/how-to-make-a-discord-bot-play-youtube-audio
 youtube_dl.utils.bug_reports_message = lambda: ''
