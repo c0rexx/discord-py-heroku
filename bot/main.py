@@ -140,7 +140,7 @@ async def garf_comic(channel, date):
         response = requests.get(url, headers)
         response.raise_for_status()
     except:
-        fail = await channel.send('Bad response from ' + url + '.')
+        fail = await channel.send("Bad response (status code: {0}) from `{1}`".format(response.status_code, url))
         await status.delete()
         await fail.add_reaction(basic_emoji.get('Si'))
         return
@@ -865,7 +865,7 @@ async def wolfram(ctx, *args):
         
     # Parse query into url-friendly format (for example replaces spaces with '%2')
     query = urllib.parse.quote_plus(' '.join(str(i) for i in args))
-    url = "http://api.wolframalpha.com/v1/simple?appid={0}&i={1}&background=36393e&foreground=white&timeout=30".format(WOLFRAM_APPID, query)
+    url = "http://api.wolframalpha.com/v1/simple?appid={0}&i={1}&background=36393f&foreground=white&timeout=30".format(WOLFRAM_APPID, query)
     
     async with ctx.typing():
         response = None
@@ -873,7 +873,7 @@ async def wolfram(ctx, *args):
             response = requests.get(url)
             response.raise_for_status()
         except:
-            fail = await ctx.send("Bad response ({0})".format(response.status_code))
+            fail = await ctx.send("Bad response (status code: {0})".format(response.status_code))
             await fail.add_reaction(basic_emoji.get('Si'))
             return
 
@@ -882,7 +882,7 @@ async def wolfram(ctx, *args):
         # And to avoid overwriting during simultaneous calls, use the query's hash as the filename
         filename = "tmp" + str(hash(query))
         open(filename, "wb").write(response.content)
-        await ctx.send(file=discord.File(filename, filename="wolframalpha.gif"))
+        await ctx.send(file=discord.File(filename, filename="result.png"))
         os.remove(filename)
         
 @bot.command(name='decide', aliases=['choose'], help="Decide between options.")
