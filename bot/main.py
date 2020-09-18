@@ -405,7 +405,7 @@ async def read(ctx, url: str = ''):
 translator = googletrans.Translator()
 @bot.command(name='translate', help="Translate text.")
 @commands.guild_only()
-async def translate(ctx, *, arg):
+async def translate(ctx, *, arg: str = ''):
     # No text entered -> nothing to translate
     if not arg:
         await ctx.send("Translate what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
