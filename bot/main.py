@@ -11,7 +11,9 @@ import wikipedia
 import youtube_dl
 import googletrans
 import emoji_locale
+import basc_py4chan
 from typing import Union
+from typing import Optional
 from textwrap import wrap
 from bs4 import BeautifulSoup
 from discord.ext import commands
@@ -907,5 +909,29 @@ async def decide(ctx, *args):
         await ctx.send("Separator not recognized, use `;`, `:`, `,` or ` or `, to separate options.")
     else:
         await ctx.send(random.choice(options))
+    
+@bot.command(name='chan', aliases=['4chan'], help="Get a random 4chan/4channel post.")
+async def chan(ctx, board: Optional[str]):
+    if not board:
+        msg = await ctx.send("No board specified.")
+        await msg.add_reaction(basic_emoji.get("Si"))
+        return
+    
+    b = None
+    try:
+        b = basc_py4chan.Board(board)
+    except:
+        msg = await ctx.send("`/{0}/` doesn't exist.")
+        await msg.add_reaction(basic_emoji.get("Si"))
+        return
+    
+    threads = b.get_all_threads()
+    text = None
+    while not text:
+        thread = random.choice(threads)
+        post = random.choice(thread)
+        text = post.text_comment
+    
+    await ctx.send(text)
     
 bot.run(DISCORD_TOKEN)
