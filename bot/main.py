@@ -274,7 +274,7 @@ async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
     if result:
         await ctx.send(result)
 
-# WideHard - from https://github.com/Toaster192/rubbergod/blob/master/cogs/weather.py
+# Yoinked from https://github.com/Toaster192/rubbergod/blob/master/cogs/weather.py WideHard
 @bot.command(name='weather', help="Get location's weather.")
 async def weather(ctx, *args):
     city = 'Prague'
@@ -921,25 +921,24 @@ async def chan(ctx, board: Optional[str]):
         await msg.add_reaction(basic_emoji.get("Si"))
         return
     
-    async with ctx.typing():
-        b = None
-        threads = None
-        try:
-            b = basc_py4chan.Board(board)
-            threads = b.get_all_threads()
-        except:
-            msg = await ctx.send("`/{0}/` doesn't exist.".format(board))
-            await msg.add_reaction(basic_emoji.get("Si"))
-            return
+    b = None
+    threads = None
+    try:
+        b = basc_py4chan.Board(board)
+        threads = b.get_all_threads()
+    except:
+        msg = await ctx.send("`/{0}/` doesn't exist.".format(board))
+        await msg.add_reaction(basic_emoji.get("Si"))
+        return
 
-        post = None
-        while not post or not post.text_comment:
-            thread = random.choice(threads)
-            post = random.choice(thread.posts)
+    post = None
+    while not post or not post.text_comment:
+        thread = random.choice(threads)
+        post = random.choice(thread.posts)
 
-        if post.has_file:
-            await ctx.send("{0}\n{1}".format(post.file_url, post.text_comment))
-        else:
-            await ctx.send(post.text_comment)
+    if post.has_file:
+        await ctx.send("{0}\n{1}".format(post.file_url, post.text_comment))
+    else:
+        await ctx.send(post.text_comment)
 
 bot.run(DISCORD_TOKEN)
