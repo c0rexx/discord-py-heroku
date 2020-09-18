@@ -405,16 +405,16 @@ async def read(ctx, url: str = ''):
 translator = googletrans.Translator()
 @bot.command(name='translate', help="Translate text.")
 @commands.guild_only()
-async def translate(ctx, *args):
+async def translate(ctx, *, arg):
     # No text entered -> nothing to translate
-    if not args:
+    if not arg:
         await ctx.send("Translate what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
     
     result = None
     # Combine tuple into one long string
-    arg = ' '.join(str(i) for i in args)
+    #arg = ' '.join(str(i) for i in args)
     # Get first word
     input = arg.split(' ', 1)
     # If it's an ISO639-1 language code, translate to that language
