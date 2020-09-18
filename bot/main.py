@@ -928,12 +928,14 @@ async def chan(ctx, board: Optional[str]):
             await msg.add_reaction(basic_emoji.get("Si"))
             return
 
-        text = None
-        while not text:
+        post = None
+        while not post or not post.text_comment:
             thread = random.choice(threads)
             post = random.choice(thread.posts)
-            text = post.text_comment
 
-        await ctx.send(text)
+        if post.has_file:
+            await ctx.send("{0}\n{1}".format(post.file_url, post.text_comment))
+        else:
+            await ctx.send(post.text_comment)
 
 bot.run(DISCORD_TOKEN)
