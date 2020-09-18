@@ -110,13 +110,16 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.message.add_reaction(basic_emoji.get('Si'))
-        await ctx.send(basic_emoji.get('Pepega') + '📣' + ' COMMAND NOT FOUND')
+        await ctx.send(basic_emoji.get('Pepega') + '📣 COMMAND NOT FOUND')
         return
     elif isinstance(error, commands.errors.NoPrivateMessage):
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         await ctx.send('Not available in DMs.')
         print(ctx.message.author.name + ' sent forbidden command DM request.')
         return
+    elif isinstance(error, commands.errors.UnexpectedQuoteError):
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
+        await ctx.send(basic_emoji.get('Pepega') + '📣 UNEXPECTED QUOTE ERROR\nUse `\\` to escape your quote(s) ' + basic_emoji.get('forsenScoots'))
     raise error
     
 def random_date(start, end):
@@ -424,7 +427,7 @@ async def translate(ctx, *args):
     # Using .lower() because for example chinese-simplified is 'zh-cn', but result.src would return 'zh-CN' (so dumb)
     msg = "Translated from `{0}` {1} to `{2}` {3}".format(googletrans.LANGUAGES.get(result.src.lower()), emoji_locale.code_to_country(result.src.lower()), googletrans.LANGUAGES.get(result.dest.lower()), emoji_locale.code_to_country(result.dest.lower()))
     # Remove any quotes from translated text (I couldn't figure out how to just escape them so discord wouldn't throw exceptions over un-quoted string or some shit)
-    await ctx.send("{0}\n```{1}```".format(msg, result.text[:1950].replace('"', '').replace('’', '').replace("'", '')))
+    await ctx.send("{0}\n```{1}```".format(msg, result.text[:1950]))
 
 # https://stackoverflow.com/questions/56060614/how-to-make-a-discord-bot-play-youtube-audio
 youtube_dl.utils.bug_reports_message = lambda: ''
