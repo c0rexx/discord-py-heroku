@@ -919,14 +919,15 @@ async def chan(ctx, board: Optional[str]):
     
     async with ctx.typing():
         b = None
+        threads = None
         try:
             b = basc_py4chan.Board(board)
+            threads = b.get_all_threads()
         except:
-            msg = await ctx.send("`/{0}/` doesn't exist.")
+            msg = await ctx.send("`/{0}/` doesn't exist.".format(board))
             await msg.add_reaction(basic_emoji.get("Si"))
             return
 
-        threads = b.get_all_threads()
         text = None
         while not text:
             thread = random.choice(threads)
