@@ -60,7 +60,7 @@ youtube_dl.utils.bug_reports_message = lambda: ''
 
 ytdl_format_options = {
     "cookies" : "cookies.txt",
-    "user_agent" : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0",
+    "user_agent" : "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0",
     "username" : YT_MAIL,
     "password" : YT_PASS,
     "format" : "bestaudio/best",
@@ -136,11 +136,11 @@ dance_react = [
 
 # HTTP header used when looking up Garfield comic
 headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Max-Age": "3600",
-    "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0"
+    "Access-Control-Allow-Origin" : "*",
+    "Access-Control-Allow-Methods" : "GET",
+    "Access-Control-Allow-Headers" : "Content-Type",
+    "Access-Control-Max-Age" : "3600",
+    "User-Agent" : "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0"
 }
 
 # Bot's discord activites
