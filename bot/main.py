@@ -3,6 +3,8 @@ import io
 import json
 import random
 import urllib
+import ctypes
+import ctypes.util
 import asyncio
 import discord
 import datetime
@@ -21,106 +23,181 @@ from google.cloud import vision
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-WEATHER_TOKEN = os.getenv('WEATHER_TOKEN')
-GOOGLE_CLOUD_CREDENTIALS = service_account.Credentials.from_service_account_info(json.loads(os.getenv('GOOGLE_CLIENT_SECRETS')))
-YOUTUBE_API_TOKEN = os.getenv('YOUTUBE_API_TOKEN')
-
 bot = commands.Bot(command_prefix='p.')
 
-basic_emoji = {
-    'Si' : '<:Si:523966164704034837>',
-    'Sadge' : '<:Sadge:696437945392955453>',
-    'Pepega' : '<:Pepega:739020602194657330>',
-    'forsenSmug' : '<:forsenSmug:736973361283858442>',
-    'forsenScoots' : '<:forsenScoots:736973346142552195>',
-    'forsenT' : '<:forsenT:743128058545832048>',
-    'docSpin' : '<a:docSpin:743133871889055774>',
-    'hackerCD' : '<a:hackerCD:744835324827402250>',
-    'Clap' : '<a:Clap:746628991753912401>',
-    'FeelsWeirdMan' : '<:FeelsWeirdMan:750942213676073012>',
-    'Okayga' : '<:Okayga:750974019104276521>',
-    'residentCD' : '<:residentCD:750974439092518922>'
+# Bot's token
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+# Openweathermap (weather)
+WEATHER_TOKEN = os.getenv("WEATHER_TOKEN")
+# Google cloud APIs (VisionAI - text OCR) - it's in JSON, instead of writing to file just parsing using json library
+GOOGLE_CLOUD_CREDENTIALS = service_account.Credentials.from_service_account_info(json.loads(os.getenv("GOOGLE_CLIENT_SECRETS")))
+# Youtube search
+YOUTUBE_API_TOKEN = os.getenv("YOUTUBE_API_TOKEN")
+# Log-in for youtube to download age-restricted videos ~this still doesn't solve the issue, I don't understand why~
+YT_MAIL = os.getenv("YT_MAIL")
+YT_PASS = os.getenv("YT_PASS")
+# youtube-dl wants cookies as a text file ~this also doesn't solve the age-restriction issue~
+with open("cookies.txt", "w") as text_file:
+    print(os.getenv('COOKIE_DATA'), file=text_file)
+# WolframAlpha queries
+WOLFRAM_APPID = os.getenv("WOLFRAM_APPID")
+
+# Registered channels where every morning's Garfield strip is posted to
+DAILY_GARF_CHANNELS = [
+    bot.guilds[0].text_channels[0]
+]
+
+# Used when looking up videos
+youtube = build("youtube", "v3", developerKey=YOUTUBE_API_TOKEN)
+# Used to read text from image
+google_vision = vision.ImageAnnotatorClient(credentials=GOOGLE_CLOUD_CREDENTIALS)
+# Used to translate text
+translator = googletrans.Translator()
+# To be able to transmit audio packets (music)
+discord.opus.load_opus(ctypes.util.find_library("opus"))
+# https://stackoverflow.com/questions/56060614/how-to-make-a-discord-bot-play-youtube-audio
+youtube_dl.utils.bug_reports_message = lambda: ''
+
+ytdl_format_options = {
+    "cookies" : "cookies.txt",
+    "user_agent" : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0",
+    "username" : YT_MAIL,
+    "password" : YT_PASS,
+    "format" : "bestaudio/best",
+    "outtmpl" : "%(extractor)s-%(id)s-%(title)s.%(ext)s",
+    "restrictfilenames" : True,
+    "noplaylist" : True,
+    "nocheckcertificate" : True,
+    "ignoreerrors" : False,
+    "logtostderr" : False,
+    "quiet" : True,
+    "no_warnings" : True,
+    "default_search" : "auto",
+    "source_address" : "0.0.0.0" # Bind to IPv4 since IPv6 addresses cause issues sometimes
 }
+# Used to download youtube videos
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
+# Used when converting downloaded videos (-vn discards video stream)
+ffmpeg_options = {
+    "options" : "-vn"
+}
+
+# Variables related to playing music (this is awful and will only ever work if the bot is used just on ONE server, since interactions on one server influence it globally)
+# Voice chat
+vc = None
+# Queued songs (youtube URLs)
+song_queue = []
+# Currently playing song
+song = ""
+# If true will repeat last song
+repeat_song = False
+# Keeps downloaded data of last song (used when repeating in order to not download same song repeatedly)
+ytdlData = None
+
+# Library of fun emojis used thorough
+basic_emoji = {
+    "Si" : "<:Si:523966164704034837>",
+    "Sadge" : "<:Sadge:696437945392955453>",
+    "Pepega" : "<:Pepega:739020602194657330>",
+    "forsenSmug" : "<:forsenSmug:736973361283858442>",
+    "forsenScoots" : "<:forsenScoots:736973346142552195>",
+    "forsenT" : "<:forsenT:743128058545832048>",
+    "docSpin" : "<a:docSpin:743133871889055774>",
+    "hackerCD" : "<a:hackerCD:744835324827402250>",
+    "Clap" : "<a:Clap:746628991753912401>",
+    "FeelsWeirdMan" : "<:FeelsWeirdMan:750942213676073012>",
+    "Okayga" : "<:Okayga:750974019104276521>",
+    "residentCD" : "<:residentCD:750974439092518922>"
+}
+# Lists of different types of emojis used to choose a random one
 scoots_emoji = [
-    '<:forsenScoots:736973346142552195>',
-    '<:OMGScoots:736973384570634321>'
+    "<:forsenScoots:736973346142552195>",
+    "<:OMGScoots:736973384570634321>"
 ]
 dance_emoji = [
-    '<a:forsenPls:741611256460476496>',
-    '<a:forsenDiscoSnake:742013168234135664>',
-    '<a:headBang:742013167890333802>',
-    '<a:KKool:742013168196517899>' + ' <a:GuitarTime:742013167554789390>',
-    '<a:pepeJAM:742013167671967805>',
-    '<a:AlienPls:742014131305054239>',
-    '<a:SHUNGITE:744474032698556477> ' + '<a:doctorDance:744473646298431510>' + ' <a:SHUNGITE:744474032698556477>'
+    "<a:forsenPls:741611256460476496>",
+    "<a:forsenDiscoSnake:742013168234135664>",
+    "<a:headBang:742013167890333802>",
+    "<a:KKool:742013168196517899>" + " <a:GuitarTime:742013167554789390>",
+    "<a:pepeJAM:742013167671967805>",
+    "<a:AlienPls:742014131305054239>",
+    "<a:SHUNGITE:744474032698556477> " + "<a:doctorDance:744473646298431510>" + " <a:SHUNGITE:744474032698556477>"
 ]
 dance_react = [
-    '<a:forsenPls:741611256460476496>',
-    '<a:forsenDiscoSnake:742013168234135664>',
-    '<a:headBang:742013167890333802>',
-    '<a:KKool:742013168196517899>',
-    '<a:pepeJAM:742013167671967805>',
-    '<a:AlienPls:742014131305054239>',
-    '<a:doctorDance:744473646298431510>'
+    "<a:forsenPls:741611256460476496>",
+    "<a:forsenDiscoSnake:742013168234135664>",
+    "<a:headBang:742013167890333802>",
+    "<a:KKool:742013168196517899>",
+    "<a:pepeJAM:742013167671967805>",
+    "<a:AlienPls:742014131305054239>",
+    "<a:doctorDance:744473646298431510>"
 ]
 
+# HTTP header used when looking up Garfield comic
 headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Max-Age': '3600',
-    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
-    }
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Max-Age": "3600",
+    "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0"
+}
 
+# Bot's discord activites
 activites = [
-    discord.Game(name='with křemík.'),
-    discord.Activity(type=discord.ActivityType.listening, name='frequencies.'),
-    discord.Activity(type=discord.ActivityType.watching, name='you.')
-    ]
+    discord.Game(name="with křemík."),
+    discord.Activity(type=discord.ActivityType.listening, name="frequencies."),
+    discord.Activity(type=discord.ActivityType.watching, name="you.")
+]
 
 async def status_changer():
     while True:
         await bot.change_presence(activity=random.choice(activites))
         await asyncio.sleep(30)
 
-async def wait_until_release():
+# Posts Garfield strip to all registered channels
+async def daily_garfield():
+    # Get time remaining until next release
     x = datetime.datetime.utcnow()
     y = x.replace(day=x.day, hour=5, minute=7)
     if not (x.hour < 5 or (x.hour == 5 and x.minute < 7)):
         y += datetime.timedelta(days=1)
     delta_t = y - x
+    # Wait until then
     await asyncio.sleep(delta_t.total_seconds())
+    # Afterwards, post today's Garfield strip in all registered channels and repeat every 24 hours
     while True:
-        await garf_comic(bot.guilds[0].text_channels[0], datetime.datetime.utcnow())
+        for channel in DAILY_GARF_CHANNELS:
+            await garf_comic(channel, datetime.datetime.utcnow())
         await asyncio.sleep(86400)
 
+# If bot restarted while it was connected to a voice channel, the bot doesn't actually go "offline" on Discord if it comes up online in a few seconds, so it doesn't get disconnected and attempting to connect while already connected yields an exception
 async def leave_voice():
     for guild in bot.guilds:
         if guild.voice_client and guild.voice_client.is_connected():
             await guild.voice_client.disconnect()
-        
+
+# Runs only once when bot boots up, creates background tasks
 @bot.event
 async def on_ready():
     bot.loop.create_task(status_changer())
-    bot.loop.create_task(wait_until_release())
+    bot.loop.create_task(daily_garfield())
     bot.loop.create_task(leave_voice())
 
+# Catches some errors that are a fault of the user to notify them
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        await ctx.send(basic_emoji.get('Pepega') + '📣 COMMAND NOT FOUND')
-        return
+        await ctx.message.add_reaction(basic_emoji.get("Si"))
+        await ctx.send("{0}📣 COMMAND NOT FOUND".format(basic_emoji.get("Pepega")))
     elif isinstance(error, commands.errors.NoPrivateMessage):
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        await ctx.send('Not available in DMs.')
-        print(ctx.message.author.name + ' sent forbidden command DM request.')
-        return
+        await ctx.message.add_reaction(basic_emoji.get("Si"))
+        await ctx.send("Not available in DMs.")
     elif isinstance(error, commands.errors.UnexpectedQuoteError):
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        await ctx.send(basic_emoji.get('Pepega') + '📣 UNEXPECTED QUOTE ERROR\nUse `\\` to escape your quote(s) ' + basic_emoji.get('forsenScoots'))
-    raise error
+        await ctx.message.add_reaction(basic_emoji.get("Si"))
+        await ctx.send("{0}📣 UNEXPECTED QUOTE ERROR\nUse `\\` to escape your quote(s) {1}".format(basic_emoji.get("Pepega"), basic_emoji.get("forsenScoots")))
+    else:
+        raise error
     
 def random_date(start, end):
     delta = end - start
@@ -360,7 +437,6 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
         await fact.add_reaction(random.choice(scoots_emoji))
 
 # Uses Google Cloud VisionAI
-google_vision = vision.ImageAnnotatorClient(credentials=GOOGLE_CLOUD_CREDENTIALS)
 def detect_text(url):
     # Download image from url
     response = requests.get(url)
@@ -402,7 +478,6 @@ async def read(ctx, url: str = ''):
     for s in wrap(text, 1990):
         await ctx.send('```' + s + '```')
     
-translator = googletrans.Translator()
 @bot.command(name='translate', help="Translate text.")
 @commands.guild_only()
 async def translate(ctx, *, arg: str = ''):
@@ -428,41 +503,6 @@ async def translate(ctx, *, arg: str = ''):
     msg = "Translated from `{0}` {1} to `{2}` {3}".format(googletrans.LANGUAGES.get(result.src.lower()), emoji_locale.code_to_country(result.src.lower()), googletrans.LANGUAGES.get(result.dest.lower()), emoji_locale.code_to_country(result.dest.lower()))
     # Remove any quotes from translated text (I couldn't figure out how to just escape them so discord wouldn't throw exceptions over un-quoted string or some shit)
     await ctx.send("{0}\n```{1}```".format(msg, result.text[:1950]))
-
-# https://stackoverflow.com/questions/56060614/how-to-make-a-discord-bot-play-youtube-audio
-youtube_dl.utils.bug_reports_message = lambda: ''
-
-# youtube-dl wants cookies as a text file
-with open("cookies.txt", "w") as text_file:
-    print(os.getenv('COOKIE_DATA'), file=text_file)
-    
-# Log-in to be able to download age-restricted videos
-YT_MAIL = os.getenv('YT_MAIL')
-YT_PASS = os.getenv('YT_PASS')
-ytdl_format_options = {
-    'cookies': 'cookies.txt',
-    'user_agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0',
-    'username': YT_MAIL,
-    'password': YT_PASS,
-    'format': 'bestaudio/best',
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'restrictfilenames': True,
-    'noplaylist': True,
-    'nocheckcertificate': True,
-    'ignoreerrors': False,
-    'logtostderr': False,
-    'quiet': True,
-    'no_warnings': True,
-    'default_search': 'auto',
-    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
-}
-
-ffmpeg_options = {
-    'options': '-vn'
-}
-
-ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
-ytdlData = None
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -493,15 +533,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
-import ctypes
-import ctypes.util
-discord.opus.load_opus(ctypes.util.find_library('opus'))    
-vc = None
-song_queue = []
-song = ""
-repeat_song = False
-
-youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_TOKEN)
 def youtube_search(title):
     search_response = youtube.search().list(q=title, part='id,snippet', maxResults=10).execute()
     videos = []
@@ -517,8 +548,6 @@ def youtube_search(title):
         if len(videos) == 5:
             return videos
     return videos
-
-BOT_ID = str(os.getenv('BOT_ID'))
 
 async def youtubeURLextractor(ctx, arg):
     # URL contained in argument
@@ -859,7 +888,7 @@ async def deth(ctx, user: Union[discord.User, str, None]):
     # Use system time again (stops predictability of other things that use randomness)
     random.seed()
     
-WOLFRAM_APPID = os.getenv('WOLFRAM_APPID')
+
 @bot.command(name='wolfram', aliases=['wa', 'wolframalpha', 'wolfram_alpha'], help="WolframAlpha query.")
 @commands.guild_only()
 async def wolfram(ctx, *args):
@@ -949,6 +978,6 @@ class Test_Cog(commands.Cog):
     @commands.command()
     async def test(self, ctx):
         await ctx.send("test response")
-
+        
 bot.add_cog(Test_Cog(bot))
 bot.run(DISCORD_TOKEN)
