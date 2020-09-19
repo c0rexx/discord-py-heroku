@@ -963,13 +963,12 @@ class Miscellaneous(commands.Cog):
             await ctx.send(random.choice(options))
 
     @commands.command(name='chan', aliases=['4chan'], help="Get a random 4chan/4channel post.")
-    async def chan(self, ctx, board: Optional[str]):
+    async def chan(self, ctx, board: Optional[str], arg: Optional[str]):
         if not board:
             msg = await ctx.send("No board specified.")
             await msg.add_reaction(basic_emoji.get("Si"))
             return
 
-        b = None
         threads = None
         try:
             b = basc_py4chan.Board(board)
@@ -979,16 +978,31 @@ class Miscellaneous(commands.Cog):
             await msg.add_reaction(basic_emoji.get("Si"))
             return
 
+        result = ""
         post = None
+        # Find post with text
+        if arg and arg.lower() is "text" or "txt":
+            while not post or not post.text_comment:
+                thread = random.choice(threads)
+                post = random.choice(thread.posts)
+                result = post.text_comment
+        # Find post with image
+        elif arg and arg.lower() is "image" or "img":
+            while not post or not post.has_file:
+                thread = random.choice(threads)
+                post = random.choice(thread.posts)
+                result = "{0}\n{1}".format(post.file_url, post.text_comment)
         # Find post with text or at least an image (its possible for all post to just have an image and no text)
-        while not post or (not post.text_comment and not post.has_file):
-            thread = random.choice(threads)
-            post = random.choice(thread.posts)
-
-        if post.has_file:
-            await ctx.send("{0}\n{1}".format(post.file_url, post.text_comment))
         else:
-            await ctx.send(post.text_comment)
+            while not post or (not post.text_comment and not post.has_file):
+                thread = random.choice(threads)
+                post = random.choice(thread.posts)
+                if post.has_file:
+                    result = "{0}\n{1}".format(post.file_url, post.text_comment)
+                else:
+                    result = post.text_comment
+        
+        await ctx.send(result[:2000])
         
 bot.add_cog(Garfield(bot))
 bot.add_cog(Music(bot))
