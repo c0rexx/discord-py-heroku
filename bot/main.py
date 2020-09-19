@@ -940,5 +940,15 @@ async def chan(ctx, board: Optional[str]):
         await ctx.send("{0}\n{1}".format(post.file_url, post.text_comment))
     else:
         await ctx.send(post.text_comment)
+        
+class Test_Cog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self._last_member = None
 
+    @commands.command()
+    async def test(self, ctx):
+        await ctx.send("test response")
+
+bot.add_cog(Test_Cog(bot))
 bot.run(DISCORD_TOKEN)
