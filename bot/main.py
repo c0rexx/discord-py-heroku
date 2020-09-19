@@ -325,7 +325,7 @@ class Garfield(commands.Cog):
     @commands.command(name="random", help="Get random Garfield comic.")
     async def rand_date(self, ctx):
         # Get a random day and that day's Garfield strip
-        rd = random_date(datetime.date(1978, 6, 19), datetime.datetime.utcnow())
+        rd = random_date(datetime.date(1978, 6, 19), datetime.datetime.utcnow().date())
         await garf_comic(ctx.channel, rd)
         # Try to find an interesting fact about that day
         facts = None
