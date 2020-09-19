@@ -963,7 +963,7 @@ class Miscellaneous(commands.Cog):
             await ctx.send(random.choice(options))
 
     @commands.command(name='chan', aliases=['4chan'], help="Get a random 4chan/4channel post.")
-    async def chan(self, ctx, board: Optional[str], arg: str = ''):
+    async def chan(self, ctx, board: str = '', arg: str = ''):
         if not board:
             msg = await ctx.send("No board specified.")
             await msg.add_reaction(basic_emoji.get("Si"))
@@ -981,13 +981,13 @@ class Miscellaneous(commands.Cog):
         result = ""
         post = None
         # Find post with text
-        if arg.lower() is "text" or "txt":
+        if arg.lower() == "text" or arg.lower() == "txt":
             while not post or not post.text_comment:
                 thread = random.choice(threads)
                 post = random.choice(thread.posts)
                 result = post.text_comment
         # Find post with image
-        elif arg.lower() is "image" or "img":
+        elif arg.lower() == "image" or arg.lower() == "img":
             while not post or not post.has_file:
                 thread = random.choice(threads)
                 post = random.choice(thread.posts)
