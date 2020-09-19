@@ -42,11 +42,6 @@ with open("cookies.txt", "w") as text_file:
 # WolframAlpha queries
 WOLFRAM_APPID = os.getenv("WOLFRAM_APPID")
 
-# Registered channels where every morning's Garfield strip is posted to
-DAILY_GARF_CHANNELS = [
-    bot.guilds[0].text_channels[0]
-]
-
 # Used when looking up videos
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_TOKEN)
 # Used to read text from image
@@ -154,7 +149,11 @@ async def status_changer():
     while True:
         await bot.change_presence(activity=random.choice(activites))
         await asyncio.sleep(30)
-
+        
+# Registered channels where every morning's Garfield strip is posted to
+DAILY_GARF_CHANNELS = [
+    bot.guilds[0].text_channels[0]
+]
 # Posts Garfield strip to all registered channels
 async def daily_garfield():
     # Get time remaining until next release
