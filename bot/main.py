@@ -665,7 +665,7 @@ class Music(commands.Cog):
 
     @commands.command(name='pause', help="Pause music.")
     @commands.guild_only()
-    async def play(self, ctx, *args):
+    async def pause(self, ctx, *args):
         global vc
         try:
             vc.pause()
@@ -832,158 +832,163 @@ class Utility(commands.Cog):
             open(filename, "wb").write(response.content)
             await ctx.send(file=discord.File(filename, filename="result.png"))
             os.remove(filename)
-                                
-@bot.command(name='ping', help="Display bot's ping.")
-async def ping(ctx):
-    ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
-    await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
-    
-@bot.command(name='deth', aliases=['death'], help="Find out when you or someone else will die.")
-async def deth(ctx, user: Union[discord.User, str, None]):
-    # Set seed (consistent time everytime for each user)
-    if not user:
-        random.seed(ctx.message.author.id)
-        name = "You"
-    elif isinstance(user, discord.User):
-        random.seed(user.id)
-        name = user.display_name
-    else:
-        random.seed(abs(hash(user.lower())))
-        name = user
-        
-    causes = [
-        "cardiovascular disease",
-        "cancer",
-        "dementia",
-        "diarrheal disease",
-        "tuberculosis",
-        "malnutrition",
-        "HIV/AIDS",
-        "malaria",
-        "smoking",
-        "suicide",
-        "homicide",
-        "natural disaster",
-        "road incident",
-        "drowning",
-        "fire",
-        "terrorism",
-        "death by animal"
-    ]
-    
-    date = random_date(datetime.date(2025,1,1), datetime.date(2100, 1, 1))
-    await ctx.send("{0} will die on {1}. Cause of deth: {2}.".format(name, custom_strftime('%B {S}, %Y', date), random.choice(causes)))
-    # Use system time again (stops predictability of other things that use randomness)
-    random.seed()
-    
-@bot.command(name='fact', help="Get random fact about a day.")
-async def fact(ctx, arg1: str = '', arg2: str = ''):
-    date = None
-    msg = ''
-    if not arg1 or not arg2:
-        date = datetime.datetime.today()
-        msg = 'On this day in the year '
-    elif not arg1.isnumeric() or not arg2.isnumeric():
-        await ctx.send("That's not even a numeric date. Try 'Month Day'.")
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        return
-    else:
-        a1 = int(arg1)
-        a2 = int(arg2)
-        correctDate = None
-        now = datetime.date.today()
+                    
+class Miscellaneous(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+                
+    @commands.command(name='ping', help="Display bot's ping.")
+    async def ping(self, ctx):
+        ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
+        await ctx.send(basic_emoji.get('Pepega') + ' 🏓 Pong! `{0}ms`'.format(int(ms)))
+
+    @commands.command(name='deth', aliases=['death'], help="Find out when you or someone else will die.")
+    async def deth(self, ctx, user: Union[discord.User, str, None]):
+        # Set seed (consistent time everytime for each user)
+        if not user:
+            random.seed(ctx.message.author.id)
+            name = "You"
+        elif isinstance(user, discord.User):
+            random.seed(user.id)
+            name = user.display_name
+        else:
+            random.seed(abs(hash(user.lower())))
+            name = user
+
+        causes = [
+            "cardiovascular disease",
+            "cancer",
+            "dementia",
+            "diarrheal disease",
+            "tuberculosis",
+            "malnutrition",
+            "HIV/AIDS",
+            "malaria",
+            "smoking",
+            "suicide",
+            "homicide",
+            "natural disaster",
+            "road incident",
+            "drowning",
+            "fire",
+            "terrorism",
+            "death by animal"
+        ]
+
+        date = random_date(datetime.date(2025,1,1), datetime.date(2100, 1, 1))
+        await ctx.send("{0} will die on {1}. Cause of deth: {2}.".format(name, custom_strftime('%B {S}, %Y', date), random.choice(causes)))
+        # Use system time again (stops predictability of other things that use randomness)
+        random.seed()
+
+    @commands.command(name='fact', help="Get random fact about a day.")
+    async def fact(self, ctx, arg1: str = '', arg2: str = ''):
+        date = None
+        msg = ''
+        if not arg1 or not arg2:
+            date = datetime.datetime.today()
+            msg = 'On this day in the year '
+        elif not arg1.isnumeric() or not arg2.isnumeric():
+            await ctx.send("That's not even a numeric date. Try 'Month Day'.")
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
+            return
+        else:
+            a1 = int(arg1)
+            a2 = int(arg2)
+            correctDate = None
+            now = datetime.date.today()
+            try:
+                date = datetime.date(2000,a1,a2)
+                msg = 'On ' + custom_strftime('%B {S}', date) + ' in the year '
+                correctDate = True
+            except ValueError:
+                correctDate = False
+            if not correctDate:
+                await ctx.send("No..? You must be using the wrong calendar. Try 'Month Day'.")
+                await ctx.message.add_reaction(basic_emoji.get('Si'))
+                return
+
+        facts = None
+        status = await ctx.send('Looking up an interesting fact...')
+        fact = ''
+        wiki_success = True
         try:
-            date = datetime.date(2000,a1,a2)
-            msg = 'On ' + custom_strftime('%B {S}', date) + ' in the year '
-            correctDate = True
-        except ValueError:
-            correctDate = False
-        if not correctDate:
-            await ctx.send("No..? You must be using the wrong calendar. Try 'Month Day'.")
+            fact = wikipedia.page(date.strftime('%B') + ' ' + str(date.day)).section('Events')
+            await status.edit(content='Searching wikipedia.com/wiki/' + date.strftime('%B') + '_' + str(date.day) + ' for an interesting fact.')
+            facts = fact.splitlines()
+        except:
+            wiki_success = False
+        if not wiki_success:
+            await status.delete()
+            fact = await ctx.send("Couldn't access wikipedia entry " + basic_emoji.get('Sadge'))
+        elif not facts:
+            await status.delete()
+            fact = await ctx.send("Didn't find any interesting fact on wikipedia.com/wiki/" + date.strftime('%B') + '_' + str(date.day) + ". Probably retarded formatting on this page for the 'events' section." + sad_emoji )
+        else:
+            await status.delete()
+            fact = await ctx.send(msg + random.choice(facts))
+            await fact.add_reaction(random.choice(scoots_emoji))
+
+    @commands.command(name='roll', help='Generate a random number between 1 and 100 by default.')
+    async def roll(self, ctx, input: str = '100'):
+        result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
+        if input.isnumeric():
+            result = str(random.randint(1, int(input)))
+        else:
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
+        await ctx.send(result)
+
+    @commands.command(name='decide', aliases=['choose'], help="Decide between options.")
+    async def decide(self, ctx, *args):
+        # No arguments -> exit
+        if not args:
+            await ctx.send("Decide between what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + "\nUse `;`, `:`, `,` or ` or `, to separate options.")
             await ctx.message.add_reaction(basic_emoji.get('Si'))
             return
 
-    facts = None
-    status = await ctx.send('Looking up an interesting fact...')
-    fact = ''
-    wiki_success = True
-    try:
-        fact = wikipedia.page(date.strftime('%B') + ' ' + str(date.day)).section('Events')
-        await status.edit(content='Searching wikipedia.com/wiki/' + date.strftime('%B') + '_' + str(date.day) + ' for an interesting fact.')
-        facts = fact.splitlines()
-    except:
-        wiki_success = False
-    if not wiki_success:
-        await status.delete()
-        fact = await ctx.send("Couldn't access wikipedia entry " + basic_emoji.get('Sadge'))
-    elif not facts:
-        await status.delete()
-        fact = await ctx.send("Didn't find any interesting fact on wikipedia.com/wiki/" + date.strftime('%B') + '_' + str(date.day) + ". Probably retarded formatting on this page for the 'events' section." + sad_emoji )
-    else:
-        await status.delete()
-        fact = await ctx.send(msg + random.choice(facts))
-        await fact.add_reaction(random.choice(scoots_emoji))
-        
-@bot.command(name='roll', help='Generate a random number between 1 and 100 by default.')
-async def roll(ctx, input: str = '100'):
-    result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
-    if input.isnumeric():
-        result = str(random.randint(1, int(input)))
-    else:
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-    await ctx.send(result)
-    
-@bot.command(name='decide', aliases=['choose'], help="Decide between options.")
-async def decide(ctx, *args):
-    # No arguments -> exit
-    if not args:
-        await ctx.send("Decide between what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + "\nUse `;`, `:`, `,` or ` or `, to separate options.")
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        return
+        raw = ' '.join(str(i) for i in args)
 
-    raw = ' '.join(str(i) for i in args)
-    
-    options = raw.split(';')
-    if len(options) < 2:
-        options = raw.split(':')
+        options = raw.split(';')
         if len(options) < 2:
-            options = raw.split(',')
+            options = raw.split(':')
             if len(options) < 2:
-                options = raw.split(' or ')
-            
-    if len(options) < 2:
-        await ctx.send("Separator not recognized, use `;`, `:`, `,` or ` or `, to separate options.")
-    else:
-        await ctx.send(random.choice(options))
-    
-@bot.command(name='chan', aliases=['4chan'], help="Get a random 4chan/4channel post.")
-async def chan(ctx, board: Optional[str]):
-    if not board:
-        msg = await ctx.send("No board specified.")
-        await msg.add_reaction(basic_emoji.get("Si"))
-        return
-    
-    b = None
-    threads = None
-    try:
-        b = basc_py4chan.Board(board)
-        threads = b.get_all_threads()
-    except:
-        msg = await ctx.send("`/{0}/` doesn't exist.".format(board))
-        await msg.add_reaction(basic_emoji.get("Si"))
-        return
+                options = raw.split(',')
+                if len(options) < 2:
+                    options = raw.split(' or ')
 
-    post = None
-    while not post or not post.text_comment:
-        thread = random.choice(threads)
-        post = random.choice(thread.posts)
+        if len(options) < 2:
+            await ctx.send("Separator not recognized, use `;`, `:`, `,` or ` or `, to separate options.")
+        else:
+            await ctx.send(random.choice(options))
 
-    if post.has_file:
-        await ctx.send("{0}\n{1}".format(post.file_url, post.text_comment))
-    else:
-        await ctx.send(post.text_comment)
+    @commands.command(name='chan', aliases=['4chan'], help="Get a random 4chan/4channel post.")
+    async def chan(self, ctx, board: Optional[str]):
+        if not board:
+            msg = await ctx.send("No board specified.")
+            await msg.add_reaction(basic_emoji.get("Si"))
+            return
+
+        b = None
+        threads = None
+        try:
+            b = basc_py4chan.Board(board)
+            threads = b.get_all_threads()
+        except:
+            msg = await ctx.send("`/{0}/` doesn't exist.".format(board))
+            await msg.add_reaction(basic_emoji.get("Si"))
+            return
+
+        post = None
+        while not post or not post.text_comment:
+            thread = random.choice(threads)
+            post = random.choice(thread.posts)
+
+        if post.has_file:
+            await ctx.send("{0}\n{1}".format(post.file_url, post.text_comment))
+        else:
+            await ctx.send(post.text_comment)
         
 bot.add_cog(Garfield(bot))
 bot.add_cog(Music(bot))
 bot.add_cog(Utility(bot))
+bot.add_cog(Miscellaneous(bot))
 bot.run(DISCORD_TOKEN)
