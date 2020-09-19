@@ -346,7 +346,7 @@ class Garfield(commands.Cog):
             fact = await ctx.send("Didn't find any interesting fact on wikipedia.com/wiki/{0}_{1}. Probably retarded formatting on this page for the 'events' section.".format(rd.strftime("%B"), str(rd.day), basic_emoji.get("Pepega")))
         else:
             await status.delete()
-            fact = await ctx.send("This comic came out in {0}. On this day also in the year ".format(custom_strftime("%B {S}, %Y", rd), random.choice(facts)))
+            fact = await ctx.send("This comic came out in {0}. On this day also in the year {1}".format(custom_strftime("%B {S}, %Y", rd), random.choice(facts).lstrip()))
             await fact.add_reaction(random.choice(scoots_emoji))
 
     @commands.command(name="garf", help="Get specific Garfield comic, format: 'Year Month Day'.")
