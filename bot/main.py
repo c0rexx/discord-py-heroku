@@ -980,7 +980,8 @@ class Miscellaneous(commands.Cog):
             return
 
         post = None
-        while not post or not post.text_comment:
+        # Find post with text or at least an image (its possible for all post to just have an image and no text)
+        while not post or (not post.text_comment and not post.has_file):
             thread = random.choice(threads)
             post = random.choice(thread.posts)
 
