@@ -258,7 +258,7 @@ async def garf_comic(channel, date):
     link = "Something went wrong."
     # Construct URL using date
     url = "http://www.gocomics.com/garfield/" + format_date(date)
-    status = await channel.send("{0} Sending HTTP request... {1}".format(basic_emoji.get("hackerCD"), basic_emoji.get("docSpin"))
+    status = await channel.send("{0} Sending HTTP request... {1}".format(basic_emoji.get("hackerCD"), basic_emoji.get("docSpin")))
     # GET page
     response = None
     try:
