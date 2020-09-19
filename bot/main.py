@@ -150,11 +150,7 @@ async def status_changer():
         await bot.change_presence(activity=random.choice(activites))
         await asyncio.sleep(30)
         
-# Registered channels where every morning's Garfield strip is posted to
-DAILY_GARF_CHANNELS = [
-    bot.guilds[0].text_channels[0]
-]
-# Posts Garfield strip to all registered channels
+# Posts Garfield strip daily to a channel
 async def daily_garfield():
     # Get time remaining until next release
     x = datetime.datetime.utcnow()
@@ -164,10 +160,9 @@ async def daily_garfield():
     delta_t = y - x
     # Wait until then
     await asyncio.sleep(delta_t.total_seconds())
-    # Afterwards, post today's Garfield strip in all registered channels and repeat every 24 hours
+    # Afterwards, post today's Garfield strip and repeat every 24 hours
     while True:
-        for channel in DAILY_GARF_CHANNELS:
-            await garf_comic(channel, datetime.datetime.utcnow())
+        await garf_comic(bot.guilds[0].text_channels[0], datetime.datetime.utcnow())
         await asyncio.sleep(86400)
 
 # If bot restarted while it was connected to a voice channel, the bot doesn't actually go "offline" on Discord if it comes up online in a few seconds, so it doesn't get disconnected and attempting to connect while already connected yields an exception
