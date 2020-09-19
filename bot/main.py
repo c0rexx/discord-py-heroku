@@ -4,7 +4,6 @@ import json
 import random
 import urllib
 import ctypes
-import ctypes.util
 import asyncio
 import discord
 import datetime
@@ -207,6 +206,50 @@ def time_until_tomorrow():
 def format_date(date):
     return str(str(date.year)+'/'+str(date.month).zfill(2)+'/'+str(date.day).zfill(2))
 
+# Adds 'st', 'nd', 'rd' to numbers
+def suffix(d):
+    return 'th' if 11<=d<=13 else {1:'st',2:'nd',3:'rd'}.get(d%10, 'th')
+# Formats datetime using above function
+def custom_strftime(format, t):
+    return t.strftime(format).replace('{S}', str(t.day) + suffix(t.day))
+
+# Uses Google Cloud VisionAI
+def detect_text(url):
+    # Download image from url
+    response = requests.get(url)
+    image = None
+    try:
+        # Convert data to image
+        image_bytes = io.BytesIO(response.content)
+        image = vision.types.Image(content=image_bytes.read())
+    except:
+        return "That's not an image? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug')
+    
+    # Let VisionAI do its thing
+    cloud_response = google_vision.text_detection(image=image)
+    texts = cloud_response.text_annotations
+    # Couldn't read anything
+    if not texts:
+        return "Can't see shit! " + basic_emoji.get('forsenT')
+    else:
+        return texts[0].description
+    
+def youtube_search(title):
+    search_response = youtube.search().list(q=title, part='id,snippet', maxResults=10).execute()
+    videos = []
+    
+    # Parse response
+    for search_result in search_response.get('items', []):
+        # Only take videos (not channels or playlists)
+        if search_result['id']['kind'] == 'youtube#video':
+            # Add pairs of ('title - channel' : 'video_id') to list
+            videos.append(('`' + search_result['snippet']['title'] + '` - `[' + search_result['snippet']['channelTitle'] + ']`', search_result['id']['videoId']))
+        
+        # Stop at 5
+        if len(videos) == 5:
+            return videos
+    return videos
+
 async def garf_comic(channel, date):
     link = 'Something went wrong.'
     url = 'http://www.gocomics.com/garfield/' + format_date(date)
@@ -234,116 +277,104 @@ async def garf_comic(channel, date):
     await status.delete()
     await channel.send(link)
 
-@bot.command(name='roll', help='Generate a random number between 1 and 100 by default.')
-async def roll(ctx, input: str = '100'):
-    result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
-    if input.isnumeric():
-        result = str(random.randint(1, int(input)))
-    else:
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-    await ctx.send(result)
+class Garfield(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+    
+    @commands.command(name='today', help="Get today's Garfield comic.")
+    async def today(self, ctx):
+        now = datetime.datetime.utcnow()
+        if now.hour < 5 or (now.hour==5 and now.minute < 7):
+            release = datetime.datetime(now.year, now.month, now.day, 5, 7, 0, 0)
+            td = (release - now)
+            hours = td.seconds // 3600 % 24
+            minutes = td.seconds // 60 % 60
+            seconds = td.seconds - hours*3600 - minutes*60
+            await ctx.send("You will have to be patient, today's comic comes out in " + str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2) + '.')
+        else:
+            await garf_comic(ctx.channel, now)
 
-@bot.command(name='today', help="Get today's Garfield comic.")
-async def today(ctx):
-    now = datetime.datetime.utcnow()
-    if now.hour < 5 or (now.hour==5 and now.minute < 7):
-        release = datetime.datetime(now.year, now.month, now.day, 5, 7, 0, 0)
-        td = (release - now)
+    @commands.command(name='yesterday', help="Get yesterdays's Garfield comic.")
+    async def yesterday(self, ctx):
+        now = datetime.datetime.utcnow()
+        await garf_comic(ctx.channel, now - datetime.timedelta(days=1))
+
+    @commands.command(name='tomorrow', help="Get tomorrow's Garfield comic? Unless??")
+    async def tomorrow(self, ctx):
+        td = time_until_tomorrow()
         hours = td.seconds // 3600 % 24
+        now = datetime.datetime.utcnow()
         minutes = td.seconds // 60 % 60
         seconds = td.seconds - hours*3600 - minutes*60
-        await ctx.send("You will have to be patient, today's comic comes out in " + str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2) + '.')
-    else:
-        await garf_comic(ctx.channel, now)
-
-@bot.command(name='yesterday', help="Get yesterdays's Garfield comic.")
-async def yesterday(ctx):
-    now = datetime.datetime.utcnow()
-    await garf_comic(ctx.channel, now - datetime.timedelta(days=1))
-
-@bot.command(name='tomorrow', help="Get tomorrow's Garfield comic? Unless??")
-async def tomorrow(ctx):
-    td = time_until_tomorrow()
-    hours = td.seconds // 3600 % 24
-    now = datetime.datetime.utcnow()
-    minutes = td.seconds // 60 % 60
-    seconds = td.seconds - hours*3600 - minutes*60
-    if now.hour < 5 or (now.hour==5 and now.minute < 7):
-        hours += 24
-    response = "You will have to be patient, tomorrow's comic comes out in " + str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2) + '.'
-    await ctx.message.add_reaction(basic_emoji.get('Si'))
-    await ctx.send(response)
-
-# Adds 'st', 'nd', 'rd' to numbers
-def suffix(d):
-    return 'th' if 11<=d<=13 else {1:'st',2:'nd',3:'rd'}.get(d%10, 'th')
-# Formats datetime using above function
-def custom_strftime(format, t):
-    return t.strftime(format).replace('{S}', str(t.day) + suffix(t.day))
-
-@bot.command(name='random', help='Get random Garfield comic.')
-async def rand_date(ctx):
-    first = datetime.date(1978, 6, 19)
-    now = datetime.datetime.utcnow()
-    last = datetime.date(now.year, now.month, now.day)
-    rd = random_date(first, last)
-    await garf_comic(ctx.channel, rd)
-    facts = None
-    status = await ctx.send('Looking up an interesting fact... ' + basic_emoji.get('docSpin'))
-    fact = ''
-    wiki_success = True
-    try:
-        fact = wikipedia.page(rd.strftime('%B') + ' ' + str(rd.day)).section('Events')
-        await status.edit(content='Searching wikipedia.com/wiki/' + rd.strftime('%B') + '_' + str(rd.day) + ' for an interesting fact.')
-        facts = fact.splitlines()
-    except:
-        wiki_success = False
-    if not wiki_success:
-        await status.delete()
-        fact = await ctx.send("Couldn't access wikipedia entry. " + basic_emoji.get('Sadge') + '\nThis comic came out in ' + custom_strftime('%B {S}, %Y', rd) + '.')
-    elif not facts:
-        await status.delete()
-        fact = await ctx.send("Didn't find any interesting fact on wikipedia.com/wiki/" + rd.strftime('%B') + '_' + str(rd.day) + ". Probably retarded formatting on this page for the 'events' section." + sad_emoji )
-    else:
-        await status.delete()
-        fact = await ctx.send('This comic came out in ' + custom_strftime('%B {S}, %Y', rd) + '. On this day also in the year ' + random.choice(facts))
-        await fact.add_reaction(random.choice(scoots_emoji))
-
-@bot.command(name='garf', help="Get specific Garfield comic, format: 'Year Month Day'.")
-async def garf(ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
-    result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
-    if not arg1 or not arg2 or not arg3:
-        result = "Date looks like 'Year Month Day', ie. '2001 9 11' :)."
+        if now.hour < 5 or (now.hour==5 and now.minute < 7):
+            hours += 24
+        response = "You will have to be patient, tomorrow's comic comes out in " + str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2) + '.'
         await ctx.message.add_reaction(basic_emoji.get('Si'))
-    elif not arg1.isnumeric() or not arg2.isnumeric() or not arg3.isnumeric():
-        result = "That's not even a numeric date."
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-    else:
-        a1 = int(arg1)
-        a2 = int(arg2)
-        a3 = int(arg3)
-        correctDate = None
-        newDate = None
-        now = datetime.date.today()
+        await ctx.send(response)
+
+    @commands.command(name='random', help='Get random Garfield comic.')
+    async def rand_date(self, ctx):
+        first = datetime.date(1978, 6, 19)
+        now = datetime.datetime.utcnow()
+        last = datetime.date(now.year, now.month, now.day)
+        rd = random_date(first, last)
+        await garf_comic(ctx.channel, rd)
+        facts = None
+        status = await ctx.send('Looking up an interesting fact... ' + basic_emoji.get('docSpin'))
+        fact = ''
+        wiki_success = True
         try:
-            newDate = datetime.date(a1,a2,a3)
-            correctDate = True
-        except ValueError:
-            correctDate = False
-        if not correctDate:
-            result = 'No..? You must be using the wrong calendar.'
-            await ctx.message.add_reaction(basic_emoji.get('Si'))
-        elif newDate > now:
-            result = 'You will have to wait for that day to come.'
-            await ctx.message.add_reaction(basic_emoji.get('Si'))
-        elif newDate >= datetime.date(1978, 6, 19):
-            result = ''
-            await garf_comic(ctx.channel, datetime.date(a1, a2, a3))
+            fact = wikipedia.page(rd.strftime('%B') + ' ' + str(rd.day)).section('Events')
+            await status.edit(content='Searching wikipedia.com/wiki/' + rd.strftime('%B') + '_' + str(rd.day) + ' for an interesting fact.')
+            facts = fact.splitlines()
+        except:
+            wiki_success = False
+        if not wiki_success:
+            await status.delete()
+            fact = await ctx.send("Couldn't access wikipedia entry. " + basic_emoji.get('Sadge') + '\nThis comic came out in ' + custom_strftime('%B {S}, %Y', rd) + '.')
+        elif not facts:
+            await status.delete()
+            fact = await ctx.send("Didn't find any interesting fact on wikipedia.com/wiki/" + rd.strftime('%B') + '_' + str(rd.day) + ". Probably retarded formatting on this page for the 'events' section." + sad_emoji )
         else:
-            result = "Unfortunately, Garfield didn't exist before 19th June 1978."
+            await status.delete()
+            fact = await ctx.send('This comic came out in ' + custom_strftime('%B {S}, %Y', rd) + '. On this day also in the year ' + random.choice(facts))
+            await fact.add_reaction(random.choice(scoots_emoji))
+
+    @commands.command(name='garf', help="Get specific Garfield comic, format: 'Year Month Day'.")
+    async def garf(self, ctx, arg1: str = '', arg2: str = '', arg3: str = ''):
+        result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
+        if not arg1 or not arg2 or not arg3:
+            result = "Date looks like 'Year Month Day', ie. '2001 9 11' :)."
             await ctx.message.add_reaction(basic_emoji.get('Si'))
-    if result:
-        await ctx.send(result)
+        elif not arg1.isnumeric() or not arg2.isnumeric() or not arg3.isnumeric():
+            result = "That's not even a numeric date."
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
+        else:
+            a1 = int(arg1)
+            a2 = int(arg2)
+            a3 = int(arg3)
+            correctDate = None
+            newDate = None
+            now = datetime.date.today()
+            try:
+                newDate = datetime.date(a1,a2,a3)
+                correctDate = True
+            except ValueError:
+                correctDate = False
+            if not correctDate:
+                result = 'No..? You must be using the wrong calendar.'
+                await ctx.message.add_reaction(basic_emoji.get('Si'))
+            elif newDate > now:
+                result = 'You will have to wait for that day to come.'
+                await ctx.message.add_reaction(basic_emoji.get('Si'))
+            elif newDate >= datetime.date(1978, 6, 19):
+                result = ''
+                await garf_comic(ctx.channel, datetime.date(a1, a2, a3))
+            else:
+                result = "Unfortunately, Garfield didn't exist before 19th June 1978."
+                await ctx.message.add_reaction(basic_emoji.get('Si'))
+        if result:
+            await ctx.send(result)
 
 # Yoinked from https://github.com/Toaster192/rubbergod/blob/master/cogs/weather.py WideHard
 @bot.command(name='weather', help="Get location's weather.")
@@ -430,27 +461,6 @@ async def fact(ctx, arg1: str = '', arg2: str = ''):
         fact = await ctx.send(msg + random.choice(facts))
         await fact.add_reaction(random.choice(scoots_emoji))
 
-# Uses Google Cloud VisionAI
-def detect_text(url):
-    # Download image from url
-    response = requests.get(url)
-    image = None
-    try:
-        # Convert data to image
-        image_bytes = io.BytesIO(response.content)
-        image = vision.types.Image(content=image_bytes.read())
-    except:
-        return "That's not an image? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug')
-    
-    # Let VisionAI do its thing
-    cloud_response = google_vision.text_detection(image=image)
-    texts = cloud_response.text_annotations
-    # Couldn't read anything
-    if not texts:
-        return "Can't see shit! " + basic_emoji.get('forsenT')
-    else:
-        return texts[0].description
-
 @bot.command(name='read', help='Read image.')
 @commands.guild_only()
 async def read(ctx, url: str = ''):
@@ -526,22 +536,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
-
-def youtube_search(title):
-    search_response = youtube.search().list(q=title, part='id,snippet', maxResults=10).execute()
-    videos = []
-    
-    # Parse response
-    for search_result in search_response.get('items', []):
-        # Only take videos (not channels or playlists)
-        if search_result['id']['kind'] == 'youtube#video':
-            # Add pairs of ('title - channel' : 'video_id') to list
-            videos.append(('`' + search_result['snippet']['title'] + '` - `[' + search_result['snippet']['channelTitle'] + ']`', search_result['id']['videoId']))
-        
-        # Stop at 5
-        if len(videos) == 5:
-            return videos
-    return videos
 
 async def youtubeURLextractor(ctx, arg):
     # URL contained in argument
@@ -914,6 +908,15 @@ async def wolfram(ctx, *args):
         await ctx.send(file=discord.File(filename, filename="result.png"))
         os.remove(filename)
         
+@bot.command(name='roll', help='Generate a random number between 1 and 100 by default.')
+async def roll(ctx, input: str = '100'):
+    result = "No, I don't think so. " + basic_emoji.get('forsenSmug')
+    if input.isnumeric():
+        result = str(random.randint(1, int(input)))
+    else:
+        await ctx.message.add_reaction(basic_emoji.get('Si'))
+    await ctx.send(result)
+    
 @bot.command(name='decide', aliases=['choose'], help="Decide between options.")
 async def decide(ctx, *args):
     # No arguments -> exit
@@ -973,5 +976,6 @@ class Test_Cog(commands.Cog):
     async def test(self, ctx):
         await ctx.send("test response")
         
+bot.add_cog(Garfield(bot))
 bot.add_cog(Test_Cog(bot))
 bot.run(DISCORD_TOKEN)
