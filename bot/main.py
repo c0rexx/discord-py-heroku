@@ -192,26 +192,29 @@ async def on_command_error(ctx, error):
     else:
         raise error
     
+# Get a random datetime in range
 def random_date(start, end):
     delta = end - start
     int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
     random_second = random.randrange(int_delta)
     return start + datetime.timedelta(seconds=random_second)
 
-def time_until_tomorrow():
+# Time remaining until next Garfield strip comes out
+def time_until_next_garfield():
     dt = datetime.datetime.utcnow()
     tomorrow = dt + datetime.timedelta(days=1)
     return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=5, minutes=7)
 
+# Format date to Garfield compatible (YYYY/MM/DD)
 def format_date(date):
-    return str(str(date.year)+'/'+str(date.month).zfill(2)+'/'+str(date.day).zfill(2))
+    return "{0}/{1}/{2}".format(str(date.year), str(date.month).zfill(2), str(date.day).zfill(2))
 
-# Adds 'st', 'nd', 'rd' to numbers
-def suffix(d):
-    return 'th' if 11<=d<=13 else {1:'st',2:'nd',3:'rd'}.get(d%10, 'th')
+# Returns "st", "nd" or "rd" for a number
+def suffix(n):
+    return "th" if 11 <= n <= 13 else {1 : "st", 2 : "nd", 3 : "rd"}.get(n % 10, "th")
 # Formats datetime using above function
-def custom_strftime(format, t):
-    return t.strftime(format).replace('{S}', str(t.day) + suffix(t.day))
+def custom_strftime(format, date):
+    return date.strftime(format).replace("{S}", str(date.day) + suffix(date.day))
 
 # Uses Google Cloud VisionAI
 def detect_text(url):
@@ -223,27 +226,28 @@ def detect_text(url):
         image_bytes = io.BytesIO(response.content)
         image = vision.types.Image(content=image_bytes.read())
     except:
-        return "That's not an image? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug')
+        return "That's not an image? {0}{1}\n{2}".format(basic_emoji.get("Pepega"), basic_emoji.get("Clap"), basic_emoji.get("forsenSmug"))
     
     # Let VisionAI do its thing
     cloud_response = google_vision.text_detection(image=image)
     texts = cloud_response.text_annotations
     # Couldn't read anything
     if not texts:
-        return "Can't see shit! " + basic_emoji.get('forsenT')
+        return "Can't see shit! {0}".format(basic_emoji.get("forsenT"))
     else:
         return texts[0].description
     
+# Returns a list of videos found with title query
 def youtube_search(title):
-    search_response = youtube.search().list(q=title, part='id,snippet', maxResults=10).execute()
+    search_response = youtube.search().list(q=title, part="id,snippet", maxResults=10).execute()
     videos = []
     
     # Parse response
-    for search_result in search_response.get('items', []):
+    for search_result in search_response.get("items", []):
         # Only take videos (not channels or playlists)
-        if search_result['id']['kind'] == 'youtube#video':
-            # Add pairs of ('title - channel' : 'video_id') to list
-            videos.append(('`' + search_result['snippet']['title'] + '` - `[' + search_result['snippet']['channelTitle'] + ']`', search_result['id']['videoId']))
+        if search_result["id"]["kind"] == "youtube#video":
+            # Add pairs of ('title - [channel]' : 'video_id') to list
+            videos.append(("`{0}` - `[{1}]`".format(search_result["snippet"]["title"], search_result["snippet"]["channelTitle"]), search_result["id"]["videoId"]))
         
         # Stop at 5
         if len(videos) == 5:
@@ -251,29 +255,35 @@ def youtube_search(title):
     return videos
 
 async def garf_comic(channel, date):
-    link = 'Something went wrong.'
-    url = 'http://www.gocomics.com/garfield/' + format_date(date)
-    status = await channel.send(basic_emoji.get('hackerCD') + 'Sending HTTP request... ' + basic_emoji.get('docSpin'))
+    link = "Something went wrong."
+    # Construct URL using date
+    url = "http://www.gocomics.com/garfield/" + format_date(date)
+    status = await channel.send("{0} Sending HTTP request... {1}".format(basic_emoji.get("hackerCD"), basic_emoji.get("docSpin"))
+    # GET page
     response = None
     try:
         response = requests.get(url, headers)
         response.raise_for_status()
+    # Network error
     except:
         fail = await channel.send("Bad response (status code: {0}) from `{1}`".format(response.status_code, url))
         await status.delete()
-        await fail.add_reaction(basic_emoji.get('Si'))
+        await fail.add_reaction(basic_emoji.get("Si"))
         return
-    await status.edit(content='Parsing ' + str(round((len(response.content)/1024.0),2)) + 'kB... ' + basic_emoji.get('docSpin'))
-    soup = BeautifulSoup(response.content, 'html.parser')
-    await status.edit(content='Looking for Garfield comic...')
-    picture = soup.find_all('picture', attrs={'class': 'item-comic-image'})
+    await status.edit(content="Parsing {0}kb... {1}".format(str(round((len(response.content)/1024.0),2)), basic_emoji.get("docSpin")))
+    # Scrape page for comic
+    soup = BeautifulSoup(response.content, "html.parser")
+    await status.edit(content="Looking for Garfield comic...")
+    picture = soup.find_all("picture", attrs={"class" : "item-comic-image"})
+    # If not found (perhaps they changed how it's embedded)
     if not picture or not picture[0]:
-        fail = await channel.send('Garfield comic not found on ' + url + '.')
+        fail = await channel.send("Garfield comic not found on " + url)
         await status.delete()
-        await fail.add_reaction(basic_emoji.get('Si'))
+        await fail.add_reaction(basic_emoji.get("Si"))
         return
-    await status.edit(content='Garfield comic found.')
-    link = picture[0].img['src']
+    # Else send comic strip
+    await status.edit(content="Garfield comic found.")
+    link = picture[0].img["src"]
     await status.delete()
     await channel.send(link)
 
@@ -301,7 +311,7 @@ class Garfield(commands.Cog):
 
     @commands.command(name='tomorrow', help="Get tomorrow's Garfield comic? Unless??")
     async def tomorrow(self, ctx):
-        td = time_until_tomorrow()
+        td = time_until_next_garfield()
         hours = td.seconds // 3600 % 24
         now = datetime.datetime.utcnow()
         minutes = td.seconds // 60 % 60
@@ -375,138 +385,6 @@ class Garfield(commands.Cog):
                 await ctx.message.add_reaction(basic_emoji.get('Si'))
         if result:
             await ctx.send(result)
-
-# Yoinked from https://github.com/Toaster192/rubbergod/blob/master/cogs/weather.py WideHard
-@bot.command(name='weather', help="Get location's weather.")
-async def weather(ctx, *args):
-    city = 'Prague'
-    if args:
-        city = ' '.join(str(i) for i in args)
-    url = ('http://api.openweathermap.org/data/2.5/weather?q=' + city + '&units=metric&lang=en&appid=' + WEATHER_TOKEN)
-    res = requests.get(url).json()
-    if str(res['cod']) == '200':
-        description = 'Weather in ' + res['name'] + ', ' + res['sys']['country']
-        embed = discord.Embed(title='Weather', description=description)
-        image = 'http://openweathermap.org/img/w/' + res['weather'][0]['icon'] + '.png'
-        embed.set_thumbnail(url=image)
-        weather = res['weather'][0]['main'] + ' (' + res['weather'][0]['description'] + ') '
-        temp = str(res['main']['temp']) + '°C'
-        feels_temp = str(res['main']['feels_like']) + '°C'
-        humidity = str(res['main']['humidity']) + '%'
-        wind = str(res['wind']['speed']) + 'm/s'
-        clouds = str(res['clouds']['all']) + '%'
-        visibility = str(res['visibility'] / 1000) + ' km' if 'visibility' in res else 'no data'
-        embed.add_field(name='Weather', value=weather, inline=False)
-        embed.add_field(name='Temperature', value=temp, inline=True)
-        embed.add_field(name='Feels like', value=feels_temp, inline=True)
-        embed.add_field(name='Humidity', value=humidity, inline=True)
-        embed.add_field(name='Wind', value=wind, inline=True)
-        embed.add_field(name='Clouds', value=clouds, inline=True)
-        embed.add_field(name='Visibility', value=visibility, inline=True)
-        await ctx.send(embed=embed)
-    elif str(res['cod']) == '404':
-        msg = await ctx.send('City not found.')
-        await msg.add_reaction(basic_emoji.get('Sadge'))
-    elif str(res['cod']) == '401':
-        msg = await ctx.send('API key broke, have a nice day.')
-        await msg.add_reaction(basic_emoji.get('Si'))
-    else:
-        await ctx.send('City not found! ' + basic_emoji.get('Sadge') + ' (' + res['message'] + ')')
-
-@bot.command(name='fact', help="Get random fact about a day.")
-async def fact(ctx, arg1: str = '', arg2: str = ''):
-    date = None
-    msg = ''
-    if not arg1 or not arg2:
-        date = datetime.datetime.today()
-        msg = 'On this day in the year '
-    elif not arg1.isnumeric() or not arg2.isnumeric():
-        await ctx.send("That's not even a numeric date. Try 'Month Day'.")
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        return
-    else:
-        a1 = int(arg1)
-        a2 = int(arg2)
-        correctDate = None
-        now = datetime.date.today()
-        try:
-            date = datetime.date(2000,a1,a2)
-            msg = 'On ' + custom_strftime('%B {S}', date) + ' in the year '
-            correctDate = True
-        except ValueError:
-            correctDate = False
-        if not correctDate:
-            await ctx.send("No..? You must be using the wrong calendar. Try 'Month Day'.")
-            await ctx.message.add_reaction(basic_emoji.get('Si'))
-            return
-
-    facts = None
-    status = await ctx.send('Looking up an interesting fact...')
-    fact = ''
-    wiki_success = True
-    try:
-        fact = wikipedia.page(date.strftime('%B') + ' ' + str(date.day)).section('Events')
-        await status.edit(content='Searching wikipedia.com/wiki/' + date.strftime('%B') + '_' + str(date.day) + ' for an interesting fact.')
-        facts = fact.splitlines()
-    except:
-        wiki_success = False
-    if not wiki_success:
-        await status.delete()
-        fact = await ctx.send("Couldn't access wikipedia entry " + basic_emoji.get('Sadge'))
-    elif not facts:
-        await status.delete()
-        fact = await ctx.send("Didn't find any interesting fact on wikipedia.com/wiki/" + date.strftime('%B') + '_' + str(date.day) + ". Probably retarded formatting on this page for the 'events' section." + sad_emoji )
-    else:
-        await status.delete()
-        fact = await ctx.send(msg + random.choice(facts))
-        await fact.add_reaction(random.choice(scoots_emoji))
-
-@bot.command(name='read', help='Read image.')
-@commands.guild_only()
-async def read(ctx, url: str = ''):
-    # Check whether user provided url or embedded image
-    if not url and not ctx.message.attachments:
-        await ctx.send("Read what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        return
-    # Get url to the image
-    if not url:
-        url = ctx.message.attachments[0].url
-    
-    # Display status
-    status = await ctx.send('Processing... ' + basic_emoji.get('docSpin'))
-    # Attempt to detect text
-    text = detect_text(url)
-    await status.delete()
-    # Split into short enough segments (Discord's max message length is 2000)
-    for s in wrap(text, 1990):
-        await ctx.send('```' + s + '```')
-    
-@bot.command(name='translate', help="Translate text.")
-@commands.guild_only()
-async def translate(ctx, *, arg: str = ''):
-    # No text entered -> nothing to translate
-    if not arg:
-        await ctx.send("Translate what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        return
-    
-    result = None
-    # Combine tuple into one long string
-    #arg = ' '.join(str(i) for i in args)
-    # Get first word
-    input = arg.split(' ', 1)
-    # If it's an ISO639-1 language code, translate to that language
-    if input[0] in googletrans.LANGUAGES:
-        result = translator.translate(input[1], dest=input[0])
-    # Otherwise translate to english by default
-    else:
-        result = translator.translate(arg, dest='en')
-        
-    # Using .lower() because for example chinese-simplified is 'zh-cn', but result.src would return 'zh-CN' (so dumb)
-    msg = "Translated from `{0}` {1} to `{2}` {3}".format(googletrans.LANGUAGES.get(result.src.lower()), emoji_locale.code_to_country(result.src.lower()), googletrans.LANGUAGES.get(result.dest.lower()), emoji_locale.code_to_country(result.dest.lower()))
-    # Remove any quotes from translated text (I couldn't figure out how to just escape them so discord wouldn't throw exceptions over un-quoted string or some shit)
-    await ctx.send("{0}\n```{1}```".format(msg, result.text[:1950]))
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -601,64 +479,116 @@ async def youtubeURLextractor(ctx, arg):
                 await msg.delete()
                 return 'https://www.youtube.com/watch?v=' + videos[valid_numbers.index(str(reaction.emoji))][1]
 
-# Play a requested song or resume paused queue
-# This works properly only on one server at a time
-# That's fine since this bot is a 'private' one, only made for one server
-@bot.command(name='play', aliases=['resume', 'unpause'], help="Join VC and play music.")
-@commands.guild_only()
-async def play(ctx, *args):
-    global vc
-    # No arguments -> exit
-    if not args and (vc is None or not vc.is_paused()):
-        await ctx.send("Play what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        return
-    
-    # Get voice channel
-    channel = None
-    try:
-        channel = ctx.author.voice.channel
-    # User not connected to voice channel -> exit
-    except:
-        msg = await ctx.send("You're not connected to a voice channel.")
-        await msg.add_reaction(basic_emoji.get('Si'))
-        return
-    
-    if not channel.permissions_for(ctx.guild.get_member(bot.user.id)).connect:
-        await ctx.send("🔒 I don't have permission to join that channel " + basic_emoji.get('Pepega'))
-        return
-        
-    if not channel.permissions_for(ctx.guild.get_member(bot.user.id)).speak:
-        await ctx.send("🔒 I don't have permission to speak in that channel " + basic_emoji.get('Pepega'))
-        return
-    
-    # Resume if paused and no song requested
-    if not args and vc.is_paused():
-        vc.resume()
-        await ctx.send('Resumed playing ' + random.choice(dance_emoji))
-        return
-    
-    # Extract youtube video url
-    arg = ' '.join(str(i) for i in args)
-    url = await youtubeURLextractor(ctx, arg)
-    if not url:
-        return
-        
-    if vc is None:
-        vc = await channel.connect()
-    else:
-        await vc.move_to(channel)
-        
-    global song_queue
-    song_queue.append(url)
-    if vc.is_playing():
-        await ctx.send('Song added to queue.')
-        return
-    
-    global song
-    global repeat_song
-    while song_queue:
-        # Bot kicked from channel
+class Music(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+    # Play a requested song or resume paused queue
+    # This works properly only on one server at a time
+    # That's fine since this bot is a 'private' one, only made for one server
+    @commands.command(name='play', aliases=['resume', 'unpause'], help="Join VC and play music.")
+    @commands.guild_only()
+    async def play(self, ctx, *args):
+        global vc
+        # No arguments -> exit
+        if not args and (vc is None or not vc.is_paused()):
+            await ctx.send("Play what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
+            return
+
+        # Get voice channel
+        channel = None
+        try:
+            channel = ctx.author.voice.channel
+        # User not connected to voice channel -> exit
+        except:
+            msg = await ctx.send("You're not connected to a voice channel.")
+            await msg.add_reaction(basic_emoji.get('Si'))
+            return
+
+        if not channel.permissions_for(ctx.guild.get_member(bot.user.id)).connect:
+            await ctx.send("🔒 I don't have permission to join that channel " + basic_emoji.get('Pepega'))
+            return
+
+        if not channel.permissions_for(ctx.guild.get_member(bot.user.id)).speak:
+            await ctx.send("🔒 I don't have permission to speak in that channel " + basic_emoji.get('Pepega'))
+            return
+
+        # Resume if paused and no song requested
+        if not args and vc.is_paused():
+            vc.resume()
+            await ctx.send('Resumed playing ' + random.choice(dance_emoji))
+            return
+
+        # Extract youtube video url
+        arg = ' '.join(str(i) for i in args)
+        url = await youtubeURLextractor(ctx, arg)
+        if not url:
+            return
+
+        if vc is None:
+            vc = await channel.connect()
+        else:
+            await vc.move_to(channel)
+
+        global song_queue
+        song_queue.append(url)
+        if vc.is_playing():
+            await ctx.send('Song added to queue.')
+            return
+
+        global song
+        global repeat_song
+        while song_queue:
+            # Bot kicked from channel
+            if not vc.is_connected():
+                vc = None
+                queue = []
+                song = ""
+                repeat_song = False
+                await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
+                return
+
+            song = song_queue.pop(0)
+            player = None
+            status = None
+            # Attempt to download video
+            try:
+                status = await ctx.send('Downloading... ' + basic_emoji.get('docSpin'))
+                # 30 sec timeout (stops 10 hour videos)
+                player = await asyncio.wait_for(YTDLSource.from_url(song, loop=bot.loop), timeout=120)
+            except asyncio.TimeoutError:
+                await status.delete()
+                await ctx.send('Download timed out (120 seconds), `' + song + '` skipped ' + basic_emoji.get('Si'))
+                continue
+            except:
+                await status.delete()
+                await ctx.send('Download failed (possibly age-restricted video), `' + song + '` skipped ' + basic_emoji.get('Si'))
+                continue
+
+            await status.delete()
+
+            # Bot kicked from vc while downloading -> return to "empty" state (no vc, nothing queued)
+            if vc is None or not vc.is_connected():
+                vc = None
+                queue = []
+                song = ""
+                repeat_song = False
+                await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
+                return
+
+            vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+            title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: `' + player.title + '` ' + random.choice(dance_emoji))
+            await title.add_reaction(random.choice(dance_react))
+
+            while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
+                await asyncio.sleep(1)
+
+            while repeat_song and vc.is_connected():
+                vc.play(player.revive(), after=lambda e: print('Player error: %s' % e) if e else None)
+                while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
+                    await asyncio.sleep(1)
+
+        # Bot kicked from vc while playing
         if not vc.is_connected():
             vc = None
             queue = []
@@ -666,173 +596,243 @@ async def play(ctx, *args):
             repeat_song = False
             await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
             return
-    
-        song = song_queue.pop(0)
-        player = None
-        status = None
-        # Attempt to download video
-        try:
-            status = await ctx.send('Downloading... ' + basic_emoji.get('docSpin'))
-            # 30 sec timeout (stops 10 hour videos)
-            player = await asyncio.wait_for(YTDLSource.from_url(song, loop=bot.loop), timeout=120)
-        except asyncio.TimeoutError:
-            await status.delete()
-            await ctx.send('Download timed out (120 seconds), `' + song + '` skipped ' + basic_emoji.get('Si'))
-            continue
-        except:
-            await status.delete()
-            await ctx.send('Download failed (possibly age-restricted video), `' + song + '` skipped ' + basic_emoji.get('Si'))
-            continue
 
-        await status.delete()
-        
-        # Bot kicked from vc while downloading -> return to "empty" state (no vc, nothing queued)
-        if vc is None or not vc.is_connected():
-            vc = None
-            queue = []
+        # Leave voice after last song
+        await vc.disconnect()
+        vc = None
+        song = ""
+
+    @commands.command(name='forceplay', aliases=['priorityplay'], help="Add song to the front of the queue.")
+    @commands.guild_only()
+    async def forceplay(self, ctx, *args):
+        # No arguments -> exit
+        if not args:
+            await ctx.send("Play what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
+            return
+
+        global vc
+        if vc is None:
+            await ctx.send("Nothing is queued to skip in front of " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + "\nUse `p.play`")
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
+            return
+
+        # Extract youtube video url
+        arg = ' '.join(str(i) for i in args)
+        url = await youtubeURLextractor(ctx, arg)
+        if not url:
+            return
+
+        global song_queue
+        song_queue.insert(0, url)
+        await ctx.send('Song inserted to the front of the queue.')
+
+    @commands.command(name='queue', help="Display songs in queue.")
+    @commands.guild_only()
+    async def queue(self, ctx):
+        global song_queue
+        if not song_queue:
+            await ctx.send('Queue is empty.')
+            return
+        msg = ""
+        for song in song_queue:
+            msg += song + '\n'
+        await ctx.send('🎶 Queue 🎶: ' + msg[:1980])
+
+    @commands.command(name='clear', help="Clear song queue.")
+    @commands.guild_only()
+    async def clear(self, ctx):
+        global song_queue
+        if not song_queue:
+            await ctx.send('Queue already empty ' + basic_emoji.get('forsenScoots'))
+            return
+        song_queue = []
+        await ctx.send('Queue emptied.')
+
+    @commands.command(name='skip', aliases=['next'], help="Skip current song.")
+    @commands.guild_only()
+    async def skip(self, ctx):
+        global vc
+        global song
+        global repeat_song
+        try:
+            vc.stop()
             song = ""
             repeat_song = False
-            await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
-            return
-            
-        vc.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-        title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: `' + player.title + '` ' + random.choice(dance_emoji))
-        await title.add_reaction(random.choice(dance_react))
+        except:
+            msg = await ctx.send("Nothing is playing.")
+            await msg.add_reaction(basic_emoji.get('Si'))
 
-        while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
-            await asyncio.sleep(1)
-            
-        while repeat_song and vc.is_connected():
-            vc.play(player.revive(), after=lambda e: print('Player error: %s' % e) if e else None)
-            while (vc.is_playing() or vc.is_paused()) and vc.is_connected():
-                await asyncio.sleep(1)
-    
-    # Bot kicked from vc while playing
-    if not vc.is_connected():
-        vc = None
-        queue = []
+    @commands.command(name='pause', help="Pause music.")
+    @commands.guild_only()
+    async def play(self, ctx, *args):
+        global vc
+        try:
+            vc.pause()
+            await ctx.send(basic_emoji.get('residentCD') + ' Paused ' + basic_emoji.get('Okayga'))
+        except:
+            msg = await ctx.send("Nothing is playing.")
+            await msg.add_reaction(basic_emoji.get('Si'))
+
+    @commands.command(name='repeat', aliases=['toggle_repeat', 'stop_repeat'], help="Repeat current song.")
+    @commands.guild_only()
+    async def repeat(self, ctx):
+        global song
+        if not song:
+            msg = await ctx.send("Nothing is playing.")
+            await msg.add_reaction(basic_emoji.get('Si'))
+            return
+
+        global repeat_song
+        repeat_song = not repeat_song
+        await ctx.send("Repeat set to `{0}`".format(repeat_song))
+
+    @commands.command(name='stop', aliases=['leave'], help="Stop playing and leave voice channel.")
+    @commands.guild_only()
+    async def stop(self, ctx):
+        global vc
+        global song_queue
+        global song
+        global repeat_song
+        song_queue = []
         song = ""
         repeat_song = False
-        await ctx.send('Kicked from voice channel ' + basic_emoji.get('FeelsWeirdMan') + ' 🖕')
-        return
-            
-    # Leave voice after last song
-    await vc.disconnect()
-    vc = None
-    song = ""
-    
-@bot.command(name='forceplay', aliases=['priorityplay'], help="Add song to the front of the queue.")
-@commands.guild_only()
-async def forceplay(ctx, *args):
-    # No arguments -> exit
-    if not args:
-        await ctx.send("Play what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        return
-    
-    global vc
-    if vc is None:
-        await ctx.send("Nothing is queued to skip in front of " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + "\nUse `p.play`")
-        await ctx.message.add_reaction(basic_emoji.get('Si'))
-        return
-    
-    # Extract youtube video url
-    arg = ' '.join(str(i) for i in args)
-    url = await youtubeURLextractor(ctx, arg)
-    if not url:
-        return
-    
-    global song_queue
-    song_queue.insert(0, url)
-    await ctx.send('Song inserted to the front of the queue.')
-    
-@bot.command(name='queue', help="Display songs in queue.")
-@commands.guild_only()
-async def queue(ctx):
-    global song_queue
-    if not song_queue:
-        await ctx.send('Queue is empty.')
-        return
-    msg = ""
-    for song in song_queue:
-        msg += song + '\n'
-    await ctx.send('🎶 Queue 🎶: ' + msg[:1980])
-        
-@bot.command(name='clear', help="Clear song queue.")
-@commands.guild_only()
-async def clear(ctx):
-    global song_queue
-    if not song_queue:
-        await ctx.send('Queue already empty ' + basic_emoji.get('forsenScoots'))
-        return
-    song_queue = []
-    await ctx.send('Queue emptied.')
-    
-@bot.command(name='skip', aliases=['next'], help="Skip current song.")
-@commands.guild_only()
-async def skip(ctx):
-    global vc
-    global song
-    global repeat_song
-    try:
-        vc.stop()
-        song = ""
-        repeat_song = False
-    except:
-        msg = await ctx.send("Nothing is playing.")
-        await msg.add_reaction(basic_emoji.get('Si'))
-        
-@bot.command(name='pause', help="Pause music.")
-@commands.guild_only()
-async def play(ctx, *args):
-    global vc
-    try:
-        vc.pause()
-        await ctx.send(basic_emoji.get('residentCD') + ' Paused ' + basic_emoji.get('Okayga'))
-    except:
-        msg = await ctx.send("Nothing is playing.")
-        await msg.add_reaction(basic_emoji.get('Si'))
-        
-@bot.command(name='repeat', aliases=['toggle_repeat', 'stop_repeat'], help="Repeat current song.")
-@commands.guild_only()
-async def repeat(ctx):
-    global song
-    if not song:
-        msg = await ctx.send("Nothing is playing.")
-        await msg.add_reaction(basic_emoji.get('Si'))
-        return
-    
-    global repeat_song
-    repeat_song = not repeat_song
-    await ctx.send("Repeat set to `{0}`".format(repeat_song))
-        
-@bot.command(name='stop', aliases=['leave'], help="Stop playing and leave voice channel.")
-@commands.guild_only()
-async def stop(ctx):
-    global vc
-    global song_queue
-    global song
-    global repeat_song
-    song_queue = []
-    song = ""
-    repeat_song = False
-    try:
-        vc.stop()
-    except:
-        msg = await ctx.send("Nothing is playing.")
-        await msg.add_reaction(basic_emoji.get('Si'))
-    
-@bot.command(name='playing', aliases=['song'], help="Display currently playing song.")
-@commands.guild_only()
-async def playing(ctx):
-    global song
-    if not song:
-        msg = await ctx.send("Nothing is playing.")
-        await msg.add_reaction(basic_emoji.get('Si'))
-    else:
-        title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: ' + song)
-        await title.add_reaction(random.choice(dance_react))
+        try:
+            vc.stop()
+        except:
+            msg = await ctx.send("Nothing is playing.")
+            await msg.add_reaction(basic_emoji.get('Si'))
+
+    @commands.command(name='playing', aliases=['song'], help="Display currently playing song.")
+    @commands.guild_only()
+    async def playing(self, ctx):
+        global song
+        if not song:
+            msg = await ctx.send("Nothing is playing.")
+            await msg.add_reaction(basic_emoji.get('Si'))
+        else:
+            title = await ctx.send(random.choice(dance_emoji) + ' 🎶 Now playing 🎶: ' + song)
+            await title.add_reaction(random.choice(dance_react))
+  
+class Utility(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
                                
+    @commands.command(name='read', help='Read image.')
+    @commands.guild_only()
+    async def read(self, ctx, url: str = ''):
+        # Check whether user provided url or embedded image
+        if not url and not ctx.message.attachments:
+            await ctx.send("Read what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
+            return
+        # Get url to the image
+        if not url:
+            url = ctx.message.attachments[0].url
+
+        # Display status
+        status = await ctx.send('Processing... ' + basic_emoji.get('docSpin'))
+        # Attempt to detect text
+        text = detect_text(url)
+        await status.delete()
+        # Split into short enough segments (Discord's max message length is 2000)
+        for s in wrap(text, 1990):
+            await ctx.send('```' + s + '```')
+
+    @commands.command(name='translate', help="Translate text.")
+    @commands.guild_only()
+    async def translate(self, ctx, *, arg: str = ''):
+        # No text entered -> nothing to translate
+        if not arg:
+            await ctx.send("Translate what? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap') + '\n' + basic_emoji.get('forsenSmug'))
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
+            return
+
+        result = None
+        # Combine tuple into one long string
+        #arg = ' '.join(str(i) for i in args)
+        # Get first word
+        input = arg.split(' ', 1)
+        # If it's an ISO639-1 language code, translate to that language
+        if input[0] in googletrans.LANGUAGES:
+            result = translator.translate(input[1], dest=input[0])
+        # Otherwise translate to english by default
+        else:
+            result = translator.translate(arg, dest='en')
+
+        # Using .lower() because for example chinese-simplified is 'zh-cn', but result.src would return 'zh-CN' (so dumb)
+        msg = "Translated from `{0}` {1} to `{2}` {3}".format(googletrans.LANGUAGES.get(result.src.lower()), emoji_locale.code_to_country(result.src.lower()), googletrans.LANGUAGES.get(result.dest.lower()), emoji_locale.code_to_country(result.dest.lower()))
+        # Remove any quotes from translated text (I couldn't figure out how to just escape them so discord wouldn't throw exceptions over un-quoted string or some shit)
+        await ctx.send("{0}\n```{1}```".format(msg, result.text[:1950]))
+                                
+    # Yoinked from https://github.com/Toaster192/rubbergod/blob/master/cogs/weather.py WideHard
+    @commands.command(name='weather', help="Get location's weather.")
+    async def weather(self, ctx, *args):
+        city = 'Prague'
+        if args:
+            city = ' '.join(str(i) for i in args)
+        url = ('http://api.openweathermap.org/data/2.5/weather?q=' + city + '&units=metric&lang=en&appid=' + WEATHER_TOKEN)
+        res = requests.get(url).json()
+        if str(res['cod']) == '200':
+            description = 'Weather in ' + res['name'] + ', ' + res['sys']['country']
+            embed = discord.Embed(title='Weather', description=description)
+            image = 'http://openweathermap.org/img/w/' + res['weather'][0]['icon'] + '.png'
+            embed.set_thumbnail(url=image)
+            weather = res['weather'][0]['main'] + ' (' + res['weather'][0]['description'] + ') '
+            temp = str(res['main']['temp']) + '°C'
+            feels_temp = str(res['main']['feels_like']) + '°C'
+            humidity = str(res['main']['humidity']) + '%'
+            wind = str(res['wind']['speed']) + 'm/s'
+            clouds = str(res['clouds']['all']) + '%'
+            visibility = str(res['visibility'] / 1000) + ' km' if 'visibility' in res else 'no data'
+            embed.add_field(name='Weather', value=weather, inline=False)
+            embed.add_field(name='Temperature', value=temp, inline=True)
+            embed.add_field(name='Feels like', value=feels_temp, inline=True)
+            embed.add_field(name='Humidity', value=humidity, inline=True)
+            embed.add_field(name='Wind', value=wind, inline=True)
+            embed.add_field(name='Clouds', value=clouds, inline=True)
+            embed.add_field(name='Visibility', value=visibility, inline=True)
+            await ctx.send(embed=embed)
+        elif str(res['cod']) == '404':
+            msg = await ctx.send('City not found.')
+            await msg.add_reaction(basic_emoji.get('Sadge'))
+        elif str(res['cod']) == '401':
+            msg = await ctx.send('API key broke, have a nice day.')
+            await msg.add_reaction(basic_emoji.get('Si'))
+        else:
+            await ctx.send('City not found! ' + basic_emoji.get('Sadge') + ' (' + res['message'] + ')')
+
+    @commands.command(name='wolfram', aliases=['wa', 'wolframalpha', 'wolfram_alpha'], help="WolframAlpha query.")
+    @commands.guild_only()
+    async def wolfram(self, ctx, *args):
+        # No arguments -> exit
+        if not args:
+            await ctx.send("What? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap'))
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
+            return
+
+        # Parse query into url-friendly format (for example replaces spaces with '%2')
+        query = urllib.parse.quote_plus(' '.join(str(i) for i in args))
+        url = "http://api.wolframalpha.com/v1/simple?appid={0}&i={1}&background=36393f&foreground=white&timeout=30".format(WOLFRAM_APPID, query)
+
+        async with ctx.typing():
+            response = None
+            try:
+                response = requests.get(url)
+                response.raise_for_status()
+            except:
+                fail = await ctx.send("Bad response (status code: {0})".format(response.status_code))
+                await fail.add_reaction(basic_emoji.get('Si'))
+                return
+
+            # I want to send an image (generated by WolframAlpha), not embed a link (image would be regenerated if user clicked it + it would contain app_id)
+            # And because discord.File has to open the file, I first save the file, then embed it, then delete it...
+            # And to avoid overwriting during simultaneous calls, use the query's hash as the filename
+            filename = "tmp" + str(hash(query))
+            open(filename, "wb").write(response.content)
+            await ctx.send(file=discord.File(filename, filename="result.png"))
+            os.remove(filename)
+                                
 @bot.command(name='ping', help="Display bot's ping.")
 async def ping(ctx):
     ms = (datetime.datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
@@ -876,37 +876,53 @@ async def deth(ctx, user: Union[discord.User, str, None]):
     # Use system time again (stops predictability of other things that use randomness)
     random.seed()
     
-
-@bot.command(name='wolfram', aliases=['wa', 'wolframalpha', 'wolfram_alpha'], help="WolframAlpha query.")
-@commands.guild_only()
-async def wolfram(ctx, *args):
-    # No arguments -> exit
-    if not args:
-        await ctx.send("What? " + basic_emoji.get('Pepega') + basic_emoji.get('Clap'))
+@bot.command(name='fact', help="Get random fact about a day.")
+async def fact(ctx, arg1: str = '', arg2: str = ''):
+    date = None
+    msg = ''
+    if not arg1 or not arg2:
+        date = datetime.datetime.today()
+        msg = 'On this day in the year '
+    elif not arg1.isnumeric() or not arg2.isnumeric():
+        await ctx.send("That's not even a numeric date. Try 'Month Day'.")
         await ctx.message.add_reaction(basic_emoji.get('Si'))
         return
-        
-    # Parse query into url-friendly format (for example replaces spaces with '%2')
-    query = urllib.parse.quote_plus(' '.join(str(i) for i in args))
-    url = "http://api.wolframalpha.com/v1/simple?appid={0}&i={1}&background=36393f&foreground=white&timeout=30".format(WOLFRAM_APPID, query)
-    
-    async with ctx.typing():
-        response = None
+    else:
+        a1 = int(arg1)
+        a2 = int(arg2)
+        correctDate = None
+        now = datetime.date.today()
         try:
-            response = requests.get(url)
-            response.raise_for_status()
-        except:
-            fail = await ctx.send("Bad response (status code: {0})".format(response.status_code))
-            await fail.add_reaction(basic_emoji.get('Si'))
+            date = datetime.date(2000,a1,a2)
+            msg = 'On ' + custom_strftime('%B {S}', date) + ' in the year '
+            correctDate = True
+        except ValueError:
+            correctDate = False
+        if not correctDate:
+            await ctx.send("No..? You must be using the wrong calendar. Try 'Month Day'.")
+            await ctx.message.add_reaction(basic_emoji.get('Si'))
             return
 
-        # I want to send an image (generated by WolframAlpha), not embed a link (image would be regenerated if user clicked it + it would contain app_id)
-        # And because discord.File has to open the file, I first save the file, then embed it, then delete it...
-        # And to avoid overwriting during simultaneous calls, use the query's hash as the filename
-        filename = "tmp" + str(hash(query))
-        open(filename, "wb").write(response.content)
-        await ctx.send(file=discord.File(filename, filename="result.png"))
-        os.remove(filename)
+    facts = None
+    status = await ctx.send('Looking up an interesting fact...')
+    fact = ''
+    wiki_success = True
+    try:
+        fact = wikipedia.page(date.strftime('%B') + ' ' + str(date.day)).section('Events')
+        await status.edit(content='Searching wikipedia.com/wiki/' + date.strftime('%B') + '_' + str(date.day) + ' for an interesting fact.')
+        facts = fact.splitlines()
+    except:
+        wiki_success = False
+    if not wiki_success:
+        await status.delete()
+        fact = await ctx.send("Couldn't access wikipedia entry " + basic_emoji.get('Sadge'))
+    elif not facts:
+        await status.delete()
+        fact = await ctx.send("Didn't find any interesting fact on wikipedia.com/wiki/" + date.strftime('%B') + '_' + str(date.day) + ". Probably retarded formatting on this page for the 'events' section." + sad_emoji )
+    else:
+        await status.delete()
+        fact = await ctx.send(msg + random.choice(facts))
+        await fact.add_reaction(random.choice(scoots_emoji))
         
 @bot.command(name='roll', help='Generate a random number between 1 and 100 by default.')
 async def roll(ctx, input: str = '100'):
@@ -967,15 +983,7 @@ async def chan(ctx, board: Optional[str]):
     else:
         await ctx.send(post.text_comment)
         
-class Test_Cog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self._last_member = None
-
-    @commands.command()
-    async def test(self, ctx):
-        await ctx.send("test response")
-        
 bot.add_cog(Garfield(bot))
-bot.add_cog(Test_Cog(bot))
+bot.add_cog(Music(bot))
+bot.add_cog(Utility(bot))
 bot.run(DISCORD_TOKEN)
