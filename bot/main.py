@@ -991,13 +991,13 @@ class Miscellaneous(commands.Cog):
             while not post or not post.has_file:
                 thread = random.choice(threads)
                 post = random.choice(thread.posts)
-                result = "{0}\n{1}".format(post.file_url, post.text_comment)
+                result = "|| {0} ||\n{1}".format(post.file_url, post.text_comment)
         else:
             while not post or not post.text_comment:
                 thread = random.choice(threads)
                 post = random.choice(thread.posts)
                 if post.has_file:
-                    result = "{0}\n{1}".format(post.file_url, post.text_comment)
+                    result = "|| {0} ||\n{1}".format(post.file_url, post.text_comment)
                 else:
                     result = post.text_comment
         
