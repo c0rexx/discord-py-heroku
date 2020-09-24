@@ -1003,8 +1003,18 @@ class Miscellaneous(commands.Cog):
         
         await ctx.send(result[:2000])
         
+class Test(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        
+    @commands.Cog.listener()
+    async def on_message(self, msg):
+        if random.randint(0,100) <= 10:
+            await msg.add_reaction(basic_emoji.get("Si"))
+    
 bot.add_cog(Garfield(bot))
 bot.add_cog(Music(bot))
 bot.add_cog(Utility(bot))
 bot.add_cog(Miscellaneous(bot))
+bot.add_cog(Test(bot))
 bot.run(DISCORD_TOKEN)
