@@ -1009,7 +1009,7 @@ class Test(commands.Cog):
         
     @commands.Cog.listener()
     async def on_message(self, msg):
-        if "p." not in msg.content and random.randint(0,100) <= 10:
+        if "p." not in msg.content and random.randint(0,100) <= 4:
             await msg.add_reaction(basic_emoji.get("Si"))
     
 bot.add_cog(Garfield(bot))
