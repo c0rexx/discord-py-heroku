@@ -146,7 +146,11 @@ activites = [
 
 async def status_changer():
     while True:
-        await bot.change_presence(activity=random.choice(activites))
+        try:
+            await bot.change_presence(activity=random.choice(activites))
+        except:
+            # Wait a little longer if a connection error occurs
+            await asyncio.asleep(90)
         await asyncio.sleep(30)
         
 # Posts Garfield strip daily to a channel
