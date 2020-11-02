@@ -157,8 +157,8 @@ async def status_changer():
 async def daily_garfield():
     # Get time remaining until next release
     x = datetime.datetime.utcnow()
-    y = x.replace(day=x.day, hour=5, minute=7)
-    if not (x.hour < 5 or (x.hour == 5 and x.minute < 7)):
+    y = x.replace(day=x.day, hour=6, minute=7)
+    if not (x.hour < 6 or (x.hour == 6 and x.minute < 7)):
         y += datetime.timedelta(days=1)
     delta_t = y - x
     # Wait until then
@@ -207,7 +207,7 @@ def random_date(start, end):
 def time_until_next_garfield():
     dt = datetime.datetime.utcnow()
     tomorrow = dt + datetime.timedelta(days=1)
-    return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=5, minutes=7)
+    return datetime.datetime.combine(tomorrow, datetime.time.min) - dt + datetime.timedelta(hours=6, minutes=7)
 
 # Format date to Garfield compatible (YYYY/MM/DD)
 def format_date(date):
@@ -299,7 +299,7 @@ class Garfield(commands.Cog):
     async def today(self, ctx):
         now = datetime.datetime.utcnow()
         # If today's comic isn't out yet
-        if now.hour < 5 or (now.hour==5 and now.minute < 7):
+        if now.hour < 6 or (now.hour==6 and now.minute < 7):
             release = datetime.datetime(now.year, now.month, now.day, 5, 7, 0, 0)
             td = (release - now)
             hours = td.seconds // 3600 % 24
@@ -321,7 +321,7 @@ class Garfield(commands.Cog):
         now = datetime.datetime.utcnow()
         minutes = td.seconds // 60 % 60
         seconds = td.seconds - hours*3600 - minutes*60
-        if now.hour < 5 or (now.hour==5 and now.minute < 7):
+        if now.hour < 6 or (now.hour==6 and now.minute < 7):
             hours += 24
         await ctx.message.add_reaction(basic_emoji.get("Si"))
         await ctx.send("You will have to be patient, tomorrow's comic comes out in {0}:{1}:{2}.".format(str(hours).zfill(2), str(minutes).zfill(2), str(seconds).zfill(2)))
