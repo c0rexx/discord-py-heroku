@@ -857,6 +857,9 @@ class Miscellaneous(commands.Cog):
         elif isinstance(user, discord.User):
             random.seed(user.id)
             name = user.display_name
+        elif isinstance(user, discord.ClientUser):
+            random.seed(user.id)
+            name = user.name
         else:
             random.seed(abs(hash(user.lower())))
             name = user
