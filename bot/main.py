@@ -878,7 +878,12 @@ class Miscellaneous(commands.Cog):
             "drowning",
             "fire",
             "terrorism",
-            "death by animal"
+            "death by animal",
+            "death by poison",
+            "death by pufferfish",
+            "death by sauna",
+            "death by electrocution",
+            "crushed by murphy bed"
         ]
 
         date = random_date(datetime.date(2025,1,1), datetime.date(2100, 1, 1))
@@ -968,6 +973,11 @@ class Miscellaneous(commands.Cog):
 
     @commands.command(name='chan', aliases=['4chan'], help="Get a random 4chan/4channel post.")
     async def chan(self, ctx, board: str = '', arg: str = ''):
+        
+        if board.lower() == "random":
+	       board_list = ['a', 'b', 'c', 'd','e','f','g','gif','d','h','hr','k','m','o','p','r','s','t','u','v','vg','w','wg','i','ic','r9k','cm','hm','y','3','adv','an','cgl','ck','co','diy','fa','fit','hc','int','jp','lit','mlp','mu','n','po','pol','sci','soc','sp','tg','toy','trv','tv','vp','wsg','x']
+	       board = random.choice(board_list)
+        
         if not board:
             msg = await ctx.send("No board specified.")
             await msg.add_reaction(basic_emoji.get("Si"))
