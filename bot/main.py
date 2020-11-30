@@ -974,6 +974,19 @@ class Miscellaneous(commands.Cog):
         else:
             await ctx.send(random.choice(options))
 
+    @commands.command(name='joke',aliases=['cringe'],help="Get a random joke")
+    async def joke(ctx):
+        id = random.randint(1, 3773)
+        url_base = "http://stupidstuff.org/jokes/joke.htm?jokeid=%d" %id
+        
+        joke_source = requests.get(url_base)
+        soup = BeautifulSoup(joke_source,'lxml')
+        
+        joke_body = soup.find('span',{'class':' gen_joke'})
+        body = joke_body.txt
+        
+        await ctx.send(body)
+               
     @commands.command(name='chan', aliases=['4chan'], help="Get a random 4chan/4channel post.")
     async def chan(self, ctx, board: str = '', arg: str = ''):
         if board.lower() == "random":
