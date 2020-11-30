@@ -981,7 +981,7 @@ class Miscellaneous(commands.Cog):
         
         joke_source = None
         try:
-            joke_source = requests.get(url_base)
+            joke_source = requests.get(url_base, headers)
             joke_source.raise_for_status()
         except:
             fail = await ctx.send("Bad response (status code {0}) from {1}".format(joke_source.status_code, url_base))
@@ -989,12 +989,12 @@ class Miscellaneous(commands.Cog):
             return
         
         soup = BeautifulSoup(joke_source.content, 'html.parser')
-        # joke_body = soup.find_all('span', attrs={'class': 'gen_joke'})
         # joke_body = [item.get_text() for item in soup.select('span.gen_joke')]
         # joke_body = soup.find_all(class_='gen_joke')
-        joke_body = soup.find_all(class_=' gen_joke')
+        # joke_body = soup.find_all(class_=' gen_joke')
+        joke_body = soup.find_all('span', attrs={'class': 'gen_joke'})
         
-        if not joke_body:
+        if not joke_body or not joke_body[0]:
             fail = await ctx.send("Joke not found on {0}".format(url_base))
             await fail.add_reaction(basic_emoji.get("Si"))
             return
