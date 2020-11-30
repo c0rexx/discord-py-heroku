@@ -979,12 +979,24 @@ class Miscellaneous(commands.Cog):
         id = random.randint(1, 3773)
         url_base = "http://stupidstuff.org/jokes/joke.htm?jokeid={0}".format(id)
         
-        joke_source = requests.get(url_base)
-        soup = BeautifulSoup(joke_source.content,'html.parser')
+        joke_source = None
+        try:
+            joke_source = requests.get(url_base)
+            joke_source.raise_for_status()
+        except:
+            fail = await channel.send("Bad response (status code {0}) from {1}".format(joke_source.status_code, url_base))
+            await fail.add_reaction(basic_emoji.get("Si"))
+            return
         
-        joke_body = soup.find('span',{'class':' gen_joke'})
+        soup = BeautifulSoup(joke_source.content, 'html.parser')
+        joke_body = soup.find('span', {'class': 'gen_joke'})
+        
+        if not joke_body:
+            fail = await channel.send("Joke not found - so fucking unlucky.")
+            await fail.add_reaction(basic_emoji.get("Si"))
+            return
+            
         body = joke_body.text
-        
         await ctx.send(body)
                
     @commands.command(name='chan', aliases=['4chan'], help="Get a random 4chan/4channel post.")
