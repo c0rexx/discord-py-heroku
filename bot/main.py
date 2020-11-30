@@ -977,13 +977,13 @@ class Miscellaneous(commands.Cog):
     @commands.command(name='joke',aliases=['cringe'],help="Get a random joke")
     async def joke(ctx):
         id = random.randint(1, 3773)
-        url_base = "http://stupidstuff.org/jokes/joke.htm?jokeid=%d" %id
+        url_base = "http://stupidstuff.org/jokes/joke.htm?jokeid={}".format(id)
         
         joke_source = requests.get(url_base)
         soup = BeautifulSoup(joke_source,'lxml')
         
         joke_body = soup.find('span',{'class':' gen_joke'})
-        body = joke_body.txt
+        body = joke_body.text
         
         await ctx.send(body)
                
