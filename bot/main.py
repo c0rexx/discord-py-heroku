@@ -992,7 +992,7 @@ class Miscellaneous(commands.Cog):
         joke_body = soup.find_all('span', attrs={'class': 'gen_joke'})
         
         if not joke_body or not joke_body[0]:
-            fail = await ctx.send("Joke not found - so fucking unlucky.")
+            fail = await ctx.send("Joke not found on {0}".format(url_base))
             await fail.add_reaction(basic_emoji.get("Si"))
             return
             
