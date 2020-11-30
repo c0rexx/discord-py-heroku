@@ -992,14 +992,17 @@ class Miscellaneous(commands.Cog):
         # joke_body = [item.get_text() for item in soup.select('span.gen_joke')]
         # joke_body = soup.find_all(class_='gen_joke')
         # joke_body = soup.find_all(class_=' gen_joke')
-        joke_body = soup.find_all('span', attrs={'class': 'gen_joke'})
+        # joke_body = soup.find_all('span', attrs={'class': 'gen_joke'})
         
-        if not joke_body or not joke_body[0]:
+        table = soup.find('table', attrs={'class': 'scroll'})
+        
+        if not table:
             fail = await ctx.send("Joke not found on {0}".format(url_base))
             await fail.add_reaction(basic_emoji.get("Si"))
             return
-            
-        await ctx.send(joke_body[0].text)
+        
+        for row in table.findAll("tr"):
+            await ctx.send(row.text)
                
     @commands.command(name='chan', aliases=['4chan'], help="Get a random 4chan/4channel post.")
     async def chan(self, ctx, board: str = '', arg: str = ''):
