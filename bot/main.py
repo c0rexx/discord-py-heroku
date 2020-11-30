@@ -984,7 +984,7 @@ class Miscellaneous(commands.Cog):
             joke_source = requests.get(url_base)
             joke_source.raise_for_status()
         except:
-            fail = await channel.send("Bad response (status code {0}) from {1}".format(joke_source.status_code, url_base))
+            fail = await ctx.send("Bad response (status code {0}) from {1}".format(joke_source.status_code, url_base))
             await fail.add_reaction(basic_emoji.get("Si"))
             return
         
@@ -992,7 +992,7 @@ class Miscellaneous(commands.Cog):
         joke_body = soup.find('span', {'class': 'gen_joke'})
         
         if not joke_body:
-            fail = await channel.send("Joke not found - so fucking unlucky.")
+            fail = await ctx.send("Joke not found - so fucking unlucky.")
             await fail.add_reaction(basic_emoji.get("Si"))
             return
             
