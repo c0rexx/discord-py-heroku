@@ -980,7 +980,7 @@ class Miscellaneous(commands.Cog):
         url_base = "http://stupidstuff.org/jokes/joke.htm?jokeid={0}".format(id)
         
         joke_source = requests.get(url_base)
-        soup = BeautifulSoup(joke_source,'html.parser')
+        soup = BeautifulSoup(joke_source.content,'html.parser')
         
         joke_body = soup.find('span',{'class':' gen_joke'})
         body = joke_body.text
