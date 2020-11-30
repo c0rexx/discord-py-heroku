@@ -974,10 +974,10 @@ class Miscellaneous(commands.Cog):
         else:
             await ctx.send(random.choice(options))
 
-    @commands.command(name='joke',aliases=['cringe'],help="Get a random joke")
-    async def joke(ctx):
+    @commands.command(name='joke', aliases=['cringe'], help="Get a random joke")
+    async def joke(self, ctx):
         id = random.randint(1, 3773)
-        url_base = "http://stupidstuff.org/jokes/joke.htm?jokeid={}".format(id)
+        url_base = "http://stupidstuff.org/jokes/joke.htm?jokeid={0}".format(id)
         
         joke_source = requests.get(url_base)
         soup = BeautifulSoup(joke_source,'html.parser')
