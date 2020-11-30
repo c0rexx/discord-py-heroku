@@ -983,19 +983,16 @@ class Miscellaneous(commands.Cog):
         try:
             joke_source = requests.get(url_base)
             joke_source.raise_for_status()
-            
         except:
-            fail = await channel.send("Error 404 - Website not Found")
-            await status.delete()
+            fail = await channel.send("Bad response (status code {0}) from {1}".format(joke_source.status_code, url_base))
             await fail.add_reaction(basic_emoji.get("Si"))
             return
         
-        soup = BeautifulSoup(joke_source.content,'html.parser')
-        joke_body = soup.find('span',{'class':' gen_joke'})
+        soup = BeautifulSoup(joke_source.content, 'html.parser')
+        joke_body = soup.find('span', {'class': 'gen_joke'})
         
         if not joke_body:
             fail = await channel.send("Joke not found - so fucking unlucky.")
-            await status.delete()
             await fail.add_reaction(basic_emoji.get("Si"))
             return
             
