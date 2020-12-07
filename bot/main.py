@@ -840,13 +840,8 @@ class Utility(commands.Cog):
             filename = "tmp" + str(hash(query))
             open(filename, "wb").write(response.content)
             
-            # Broken with update, no longer embeds image files as image WHY
-            # await ctx.send(file=discord.File(filename, filename="result.png"))
-            file = discord.File(filename, filename="result.png")
-            e = discord.Embed()
-            e.set_image(url="attachment://" + filename)
-            await ctx.send(file=file, embed=e)
-            
+            await ctx.send(file=discord.File(filename, filename="result.png"))
+
             os.remove(filename)
                     
 class Miscellaneous(commands.Cog):
