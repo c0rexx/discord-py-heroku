@@ -839,7 +839,14 @@ class Utility(commands.Cog):
             # And to avoid overwriting during simultaneous calls, use the query's hash as the filename
             filename = "tmp" + str(hash(query))
             open(filename, "wb").write(response.content)
-            await ctx.send(file=discord.File(filename, filename="result.png"))
+            
+            # Broken with update, no longer embeds image files as image WHY
+            # await ctx.send(file=discord.File(filename, filename="result.png"))
+            file = discord.File(filename, filename="result.png")
+            e = discord.Embed()
+            e.set_image(url="attachment://" + filename)
+            await ctx.send(file=file, embed=e)
+            
             os.remove(filename)
                     
 class Miscellaneous(commands.Cog):
