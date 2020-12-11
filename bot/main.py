@@ -290,9 +290,7 @@ async def garf_comic(channel, date):
     link = picture[0].img["src"]
     await status.delete()
     
-    e = discord.Embed()
-    e.set_image(url=link)
-    await channel.send(embed=e)
+    await channel.send(link)
 
 class Garfield(commands.Cog):
     def __init__(self, bot):
